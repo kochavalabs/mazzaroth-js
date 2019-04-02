@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package pb;
+
+import "block.proto";
+import "header.proto";
+import "event.proto";
+
+message Ledger {
+    bytes                   id                      = 1;
+    BlockHeader             current_block_header    = 2;
+    Block                   current_block           = 3;
+    Block                   genesis_block           = 4;
+    repeated BlockHeader    block_headers           = 5;
+    repeated Block          blocks                  = 6;
+    repeated Event          events                  = 7;
+}

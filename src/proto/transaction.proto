@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package pb;
+
+
+// Basic information needed to execute a transaction on the mazzaroth.
+message Transaction {
+
+    // Contract identifier, public key of the deployed contract object
+    // formatted as hex.
+    bytes contract_id = 1;
+
+    // Channel identifier, can be the channel key or namespace.
+    // namespace example: mazz://xchng.publisher
+    string channel = 2;
+
+    // Byte array representing the id of the sender, this also happens
+    // to be the sender's account public key.
+    bytes sender_id = 3;
+
+    // Randomly generated nonce to avoid message replays.
+    uint64 nonce = 4;
+
+    // Contract function to execute.
+    string call = 5; // Function to call
+
+    // Arguments to the contract function. The serialization format is defined
+    // by the contract itself.
+    repeated bytes input = 6;
+
+}
+
+
+// Transaction along with the signature of the serialized transaction bytes.
+message SignedTransaction {
+
+  // Raw transaction bytes serialized. Should be in the format of a Transaction message.
+  bytes transaction = 1;
+
+  // Byte array signature of the Transaction bytes signed by the Transaction 
+  // sender's private key.
+  bytes signature = 2;
+
+}
+
+// A transaction that a node has accepted, assigned an ID to, and is attempting
+// to write to the blockchain.
+message AcceptedTransaction {
+
+  // Unique ID for each transaction.
+  uint64 id = 1;
+
+  // These are the raw bytes received from the original request to process a
+  // transaction. Although nodes read and inspect transactions,  they  don't
+  // reseralize them after assigning a transaction ID. This is to avoid
+  // slight differences in serialization format from invalidating a signature.
+  bytes signed_transaction = 2;
+
+}
+
+// Status of a transaction.
+enum TransactionStatus {
+
+  // The transaction status is either not known or not set.
+  TX_UNKNOWN = 0;
+
+  // The transaction has been accepted by a node and is in the process of being
+  // submitted to the blockchain.
+  TX_ACCEPTED = 1;
+
+  // This transaction was not accepted by the blockchain.
+  TX_REJECTED = 2;
+
+  // The transaction has succesfully been added to the blockchain.
+  TX_CONFIRMED = 3;
+
+  // This transaction was not found.
+  TX_NOT_FOUND = 4;
+
+}
