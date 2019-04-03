@@ -26,7 +26,7 @@ clientCommand('contract-deploy', [['-n --contract_name <s>', 'Priv key hex to si
       client.contractDeploy(data, name).then(res => {
         console.log(res.contract.contractId.toString('hex'))
       })
-        .catch(error => console.log(error))
+        .catch(error => console.log(error.response.data))
     })
   })
 
@@ -35,7 +35,15 @@ clientCommand('transaction-submit', [],
     client.transactionSubmit(JSON.parse(val)).then(res => {
       console.log(res)
     })
-      .catch(error => console.log(error))
+      .catch(error => console.log(error.response.data))
+  })
+
+clientCommand('transaction-lookup', [],
+  (val, options, client) => {
+    client.transactionLookup(val).then(res => {
+      console.log(res)
+    })
+      .catch(error => console.log(error.response.data))
   })
 
 program.parse(process.argv)

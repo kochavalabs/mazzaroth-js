@@ -31,6 +31,18 @@ class Client {
       })
   }
 
+  transactionLookup (txID) {
+    debug('Looking up transaction: ' + txID)
+    const request = pb.TransactionLookupRequest.fromObject({ id: txID })
+    debug(request)
+    const body = JSON.stringify(request)
+    return axios
+      .post(this.host + '/transaction_lookup', body)
+      .then(res => {
+        return pb.TransactionLookupResponse.create(res.data)
+      })
+  }
+
   contractDeploy (wasmBytes, contractName) {
     debug('Deploying contract: ' + contractName)
     const contractMessage = pb.Contract.create({
