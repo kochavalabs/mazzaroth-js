@@ -2,7 +2,7 @@ import Debug from 'debug'
 import axios from 'axios'
 import { pb } from '../proto/bundle.js'
 
-const debug = Debug('mazeltov:node-client')
+const debug = Debug('mazzeltov:node-client')
 
 class Client {
   constructor (host, privateKey) {

@@ -26,7 +26,7 @@ Deploys a contract to the node making it available for use. Accepts a file as
 the argument for <val> which should be a valid mazzaroth contract wasm file.
 
 Examples:
-  mazeltov contract-deploy './test/data/hello_world.wasm' -n 'My contract'
+  mazzeltov contract-deploy './test/data/hello_world.wasm' -n 'My contract'
 `
 const contractDeployOptions = [
   [
@@ -52,7 +52,7 @@ that can be formatted into a transaction protobuf:
 (https://github.com/kochavalabs/mazzaroth/blob/develop/pkg/pb/transaction.proto)
 
 Examples:
-  mazeltov transaction-submit '{"contractId":"$ID", "call":"hello"}'
+  mazzeltov transaction-submit '{"contractId":"$ID", "call":"hello"}'
 `
 clientCommand('transaction-submit', transactionSubmitDesc, [],
   (val, options, client) => {
@@ -67,7 +67,7 @@ Looks up the current status and results of a transaction by ID. Val is simply
 a transaction ID (an integer).
 
 Examples:
-  mazeltov transaction-lookup 909970530173428724
+  mazzeltov transaction-lookup 909970530173428724
 `
 clientCommand('transaction-lookup', transactionLookupDesc, [],
   (val, options, client) => {

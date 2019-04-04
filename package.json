@@ -1,12 +1,12 @@
 {
-  "name": "mazeltov",
+  "name": "mazzeltov",
   "version": "0.1.0",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
     "build": "npm run lint && babel src -d dist",
-    "test": "npm run lint && env DEBUG='mazeltov*' ./node_modules/.bin/mocha --require babel-register \"test/**/*.js\"",
-    "cli": "npm run build && env DEBUG='mazeltov*' node ./dist/cli/mazeltov.js",
+    "test": "npm run lint && env DEBUG='mazzeltov*' ./node_modules/.bin/mocha --require babel-register \"test/**/*.js\"",
+    "cli": "npm run build && env DEBUG='mazzeltov*' node ./dist/cli/mazzeltov.js",
     "lint": "./node_modules/.bin/eslint ."
   },
   "keywords": [],
