@@ -10,6 +10,9 @@ class Client {
     debug('private key: %o', privateKey)
     this.host = host.replace(/\/+$/, '')
     this.privateKey = Buffer.from(privateKey, 'hex')
+    this.transactionLookupRoute = '/transaction_lookup'
+    this.transactionSubmitRoute = '/transaction_submit'
+    this.contractDeploy = '/contract_deploy'
   }
 
   transactionSubmit (txObj) {
@@ -25,21 +28,21 @@ class Client {
     })
     const body = JSON.stringify(request)
     return axios
-      .post(this.host + '/transaction_submit', body)
+      .post(this.host + this.transactionSubmitRoute, body)
       .then(res => {
-        return pb.TransactionSubmitResponse.create(res.data)
+        return pb.TransactionSubmitResponse.fromObject(res.data)
       })
   }
 
   transactionLookup (txID) {
     debug('Looking up transaction: ' + txID)
-    const request = pb.TransactionLookupRequest.fromObject({ id: txID })
+    const request = pb.TransactionLookupRequest.create({ id: txID })
     debug(request)
     const body = JSON.stringify(request)
     return axios
-      .post(this.host + '/transaction_lookup', body)
+      .post(this.host + this.transactionLookupRoute, body)
       .then(res => {
-        return pb.TransactionLookupResponse.create(res.data)
+        return pb.TransactionLookupResponse.fromObject(res.data)
       })
   }
 
@@ -60,9 +63,9 @@ class Client {
 
     const body = JSON.stringify(request)
     return axios
-      .post(this.host + '/contract_deploy', body)
+      .post(this.host + this.contractDeployRoute, body)
       .then(res => {
-        return pb.ContractDeployResponse.create(res.data)
+        return pb.ContractDeployResponse.fromObject(res.data)
       })
   }
 }
