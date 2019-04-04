@@ -1,4 +1,4 @@
-# Mazel Tov
+# Mazzeltov
 
 A node library and cli for interacting with Mazzaroth nodes. Name is pending.
 
