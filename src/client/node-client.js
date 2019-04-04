@@ -8,8 +8,8 @@ class Client {
   constructor (host, privateKey) {
     debug('host: %o', host)
     debug('private key: %o', privateKey)
-    this.host = host
-    this.privateKey = privateKey
+    this.host = host.replace(/\/+$/, '')
+    this.privateKey = Buffer.from(privateKey, 'hex')
   }
 
   transactionSubmit (txObj) {
