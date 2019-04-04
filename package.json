@@ -31,6 +31,7 @@
     "axios": "^0.18.0",
     "commander": "^2.19.0",
     "debug": "^4.1.1",
+    "mazzaroth-proto": "git+ssh://git@github.com/kochavalabs/mazzaroth-proto.git",
     "protobufjs": "^6.8.8"
   }
 }

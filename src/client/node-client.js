@@ -1,6 +1,6 @@
 import Debug from 'debug'
 import axios from 'axios'
-import { pb } from '../proto/bundle.js'
+import { pb } from 'mazzaroth-proto'
 
 const debug = Debug('mazzeltov:node-client')
 
