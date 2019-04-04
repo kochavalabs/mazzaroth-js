@@ -2,12 +2,15 @@ import fs from 'fs'
 import program from 'commander'
 import Client from '../client/node-client.js'
 
-const clientCommand = (command, options, action) => {
+const clientCommand = (command, desc, opts, action) => {
   let cmd = program.command(`${command} <val>`)
-  cmd.option('-h --host <s>', 'Web address of the host node default: "http://localhost:8081"')
-    .option('-k --priv_key <s>', 'Priv key hex to sign contract with. default: "0"')
+  cmd.description(desc)
+    .option('-h --host <s>',
+      'Web address of the host node default: "http://localhost:8081"')
+    .option('-k --priv_key <s>',
+      'Priv key hex to sign contract with. default: "0"')
 
-  for (const opt of options) {
+  for (const opt of opts) {
     cmd.option(opt[0], opt[1])
   }
   cmd.action(function (val, options) {
@@ -18,7 +21,20 @@ const clientCommand = (command, options, action) => {
   })
 }
 
-clientCommand('contract-deploy', [['-n --contract_name <s>', 'Priv key hex to sign contract with. default: "contract"']],
+const contractDeployDesc = `
+Deploys a contract to the node making it available for use. Accepts a file as
+the argument for <val> which should be a valid mazzaroth contract wasm file.
+
+Examples:
+  mazeltov contract-deploy './test/data/hello_world.wasm' -n 'My contract'
+`
+const contractDeployOptions = [
+  [
+    '-n --contract_name <s>',
+    'Priv key hex to sign contract with. default: "contract"'
+  ]
+]
+clientCommand('contract-deploy', contractDeployDesc, contractDeployOptions,
   (val, options, client) => {
     const name = options.contract_name || 'contract'
     fs.readFile(val, (err, data) => {
@@ -30,7 +46,15 @@ clientCommand('contract-deploy', [['-n --contract_name <s>', 'Priv key hex to si
     })
   })
 
-clientCommand('transaction-submit', [],
+const transactionSubmitDesc = `
+Submits a transaction to a mazzaroth node. The format of <val> is a json string
+that can be formatted into a transaction protobuf:
+(https://github.com/kochavalabs/mazzaroth/blob/develop/pkg/pb/transaction.proto)
+
+Examples:
+  mazeltov transaction-submit '{"contractId":"$ID", "call":"hello"}'
+`
+clientCommand('transaction-submit', transactionSubmitDesc, [],
   (val, options, client) => {
     client.transactionSubmit(JSON.parse(val)).then(res => {
       console.log(res)
@@ -38,12 +62,23 @@ clientCommand('transaction-submit', [],
       .catch(error => console.log(error.response.data))
   })
 
-clientCommand('transaction-lookup', [],
+const transactionLookupDesc = `
+Looks up the current status and results of a transaction by ID. Val is simply
+a transaction ID (an integer).
+
+Examples:
+  mazeltov transaction-lookup 909970530173428724
+`
+clientCommand('transaction-lookup', transactionLookupDesc, [],
   (val, options, client) => {
     client.transactionLookup(val).then(res => {
       console.log(res)
     })
       .catch(error => console.log(error.response.data))
   })
+
+program.on('command:*', function (command) {
+  program.help()
+})
 
 program.parse(process.argv)
