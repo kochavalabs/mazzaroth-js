@@ -50,7 +50,7 @@ describe('node client test', () => {
       nock(defaultRoute)
         .post('/transaction_lookup', JSON.stringify(requestProto))
         .reply(200)
-      const client = new NodeClient(defaultRoute)
+      const client = new NodeClient()
       client.transactionLookup(Buffer.from([0, 1, 2]))
         .then(resp => {})
     })
@@ -64,7 +64,7 @@ describe('node client test', () => {
       nock(defaultRoute)
         .post('/transaction_lookup')
         .reply(200, JSON.stringify(respProto))
-      const client = new NodeClient(defaultRoute)
+      const client = new NodeClient()
       client.transactionLookup('')
         .then(resp => {
           expect(resp).to.deep.equal(respProto)
@@ -108,7 +108,7 @@ describe('node client test', () => {
       nock(defaultRoute)
         .post('/transaction_submit')
         .reply(200, JSON.stringify(respProto))
-      const client = new NodeClient(defaultRoute)
+      const client = new NodeClient()
       client.transactionSubmit({}).then(resp => {
         expect(resp).to.deep.equal(respProto)
       })

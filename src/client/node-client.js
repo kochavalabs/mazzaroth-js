@@ -10,7 +10,8 @@ class Client {
     debug('private key: %o', privateKey)
     debug('public key: %o', privateKey)
     debug('sign: %o', sign)
-    this.host = host.replace(/\/+$/, '')
+    this.host = host || 'http://localhost:8081'
+    this.host = this.host.replace(/\/+$/, '')
     this.privateKey = Buffer.from(privateKey || '', 'hex')
     this.publicKey = Buffer.from(publicKey || '', 'hex')
     this.transactionLookupRoute = '/transaction_lookup'
