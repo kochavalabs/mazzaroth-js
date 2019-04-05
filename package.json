@@ -9,6 +9,10 @@
     "cli": "npm run build && env DEBUG='mazzeltov*' node ./dist/cli/mazzeltov.js",
     "lint": "./node_modules/.bin/eslint ."
   },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/kochavalabs/mazzeltov.git"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
