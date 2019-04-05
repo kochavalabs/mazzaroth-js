@@ -5,22 +5,28 @@ import { pb } from 'mazzaroth-proto'
 const debug = Debug('mazzeltov:node-client')
 
 class Client {
-  constructor (host, privateKey) {
+  constructor (host, privateKey, publicKey, sign) {
     debug('host: %o', host)
     debug('private key: %o', privateKey)
+    debug('public key: %o', privateKey)
+    debug('sign: %o', sign)
     this.host = host.replace(/\/+$/, '')
-    this.privateKey = Buffer.from(privateKey, 'hex')
+    this.privateKey = Buffer.from(privateKey || '', 'hex')
+    this.publicKey = Buffer.from(publicKey || '', 'hex')
     this.transactionLookupRoute = '/transaction_lookup'
     this.transactionSubmitRoute = '/transaction_submit'
     this.contractDeploy = '/contract_deploy'
+    this.sign = sign || ((x, y) => { return Buffer.from([]) })
   }
 
   transactionSubmit (txObj) {
     debug('Sending transaction: ' + txObj)
     const txProto = pb.Transaction.create(txObj)
+    const txBytes = pb.Transaction.encode(txProto).finish()
     const signedTx = pb.SignedTransaction.create({
-      transaction: pb.Transaction.encode(txProto).finish(),
-      signature: Buffer.from('1231245321', 'hex')
+      transaction: txBytes,
+      senderId: this.publicKey,
+      signature: this.sign(this.privateKey, txBytes)
     })
 
     const request = pb.TransactionSubmitRequest.create({
