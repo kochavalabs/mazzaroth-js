@@ -1,4 +1,3 @@
-/* eslint no-unused-expressions: 0 */
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import { pb } from 'mazzaroth-proto'
