@@ -77,13 +77,14 @@ describe('node client test', () => {
       const privKey = Buffer.from([1, 4, 5, 5])
       const pubKey = Buffer.from([1, 2, 4])
       const tx = {
-        contractId: Buffer.from([1, 2, 3]),
-        channel: 'cool_channel',
+        channelId: Buffer.from([1, 2, 3]),
         nonce: 2 ** 4,
-        call: 'asdfasdr',
-        bytes: [ Buffer.from([1, 2, 3]) ]
+        call: {
+          toCall: 'call_this',
+          input: [Buffer.from([2, 2, 3]), Buffer.from([3, 4, 5])]
+        }
       }
-      const txProto = pb.Transaction.create(tx)
+      const txProto = pb.Transaction.fromObject(tx)
       const txBytes = pb.Transaction.encode(txProto).finish()
       const signedTx = pb.SignedTransaction.create({
         transaction: txBytes,

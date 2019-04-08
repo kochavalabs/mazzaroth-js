@@ -16,7 +16,6 @@ class Client {
     this.publicKey = Buffer.from(publicKey || '', 'hex')
     this.transactionLookupRoute = '/transaction_lookup'
     this.transactionSubmitRoute = '/transaction_submit'
-    this.contractDeploy = '/contract_deploy'
     this.sign = sign || ((x, y) => { return Buffer.from([]) })
   }
 
@@ -50,29 +49,6 @@ class Client {
       .post(this.host + this.transactionLookupRoute, body)
       .then(res => {
         return pb.TransactionLookupResponse.fromObject(res.data)
-      })
-  }
-
-  contractDeploy (wasmBytes, contractName) {
-    debug('Deploying contract: ' + contractName)
-    const contractMessage = pb.Contract.create({
-      name: contractName,
-      ownerId: this.privateKey,
-      wasmBytes: wasmBytes
-    })
-    const signedContract = pb.SignedContract.create({
-      contract: pb.Contract.encode(contractMessage).finish(),
-      signature: Buffer.from('1231245321', 'hex')
-    })
-
-    const request = pb.ContractDeployRequest.create({
-      contract: signedContract })
-
-    const body = JSON.stringify(request)
-    return axios
-      .post(this.host + this.contractDeployRoute, body)
-      .then(res => {
-        return pb.ContractDeployResponse.fromObject(res.data)
       })
   }
 }

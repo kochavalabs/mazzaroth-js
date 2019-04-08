@@ -1,4 +1,3 @@
-import fs from 'fs'
 import program from 'commander'
 import Client from '../client/node-client.js'
 
@@ -21,38 +20,13 @@ const clientCommand = (command, desc, opts, action) => {
   })
 }
 
-const contractDeployDesc = `
-Deploys a contract to the node making it available for use. Accepts a file as
-the argument for <val> which should be a valid mazzaroth contract wasm file.
-
-Examples:
-  mazzeltov contract-deploy './test/data/hello_world.wasm' -n 'My contract'
-`
-const contractDeployOptions = [
-  [
-    '-n --contract_name <s>',
-    'Priv key hex to sign contract with. default: "contract"'
-  ]
-]
-clientCommand('contract-deploy', contractDeployDesc, contractDeployOptions,
-  (val, options, client) => {
-    const name = options.contract_name || 'contract'
-    fs.readFile(val, (err, data) => {
-      if (err) throw err
-      client.contractDeploy(data, name).then(res => {
-        console.log(res.contract.contractId.toString('hex'))
-      })
-        .catch(error => console.log(error.response.data))
-    })
-  })
-
 const transactionSubmitDesc = `
 Submits a transaction to a mazzaroth node. The format of <val> is a json string
 that can be formatted into a transaction protobuf:
 (https://github.com/kochavalabs/mazzaroth/blob/develop/pkg/pb/transaction.proto)
 
 Examples:
-  mazzeltov transaction-submit '{"contractId":"$ID", "call":"hello"}'
+  mazzeltov transaction-submit '{"channelId":"$ID", "call":"hello"}'
 `
 clientCommand('transaction-submit', transactionSubmitDesc, [],
   (val, options, client) => {
