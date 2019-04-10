@@ -2,7 +2,6 @@
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import { sign, verify, fromPrivate } from '../../src/crypto/ecc-ed25519.js'
-import crypto from 'crypto'
 
 const privateKey = Buffer.from(
   'e0bb782b8db5fbf89c3a7ed8906883ca86afff4544c6e8f5473a2c6ebea950be',
@@ -64,19 +63,20 @@ describe('ed25519 ecc', () => {
       expect(verify(publicKey, message, signature)).to.be.true
     })
 
-    it('should sign and verify message', () => {
+    it('should sign and verify message2', () => {
       const message = Buffer.from([4, 5, 5, 8, 10, 3])
       const signature = sign(privateKey2, message)
       expect(verify(publicKey2, message, signature)).to.be.true
     })
 
-    it('fixed values', () => {
-      const signature = sign(privateKey2, message2, (msg) => {
-        const hash = crypto.createHash('sha512')
-        hash.update(msg)
-        hash.digest('hex')
-      })
+    it('Generate correct signature based on reference impl.', () => {
+      const signature = sign(privateKey2, message2)
       expect(signature).to.deep.equal(signature2)
+    })
+
+    it('Verifies signature based on a reference impl.', () => {
+      const verified = verify(publicKey2, message2, signature2)
+      expect(verified).to.be.true
     })
   })
 

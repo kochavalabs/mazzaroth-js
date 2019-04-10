@@ -14,7 +14,7 @@ function sign (privateKey, message) {
   return Buffer.from(key.sign(message).toHex(), 'hex')
 }
 
-function verify (publicKey, message, signature, hashFunc) {
+function verify (publicKey, message, signature) {
   debug('Verifying')
   debug('publicKey: %o', publicKey)
   debug('message: %o', message)
