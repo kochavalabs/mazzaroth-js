@@ -43,7 +43,6 @@ clientCommand('transaction-submit', transactionCallDesc, transactionOptions,
       nonce: Math.floor(Math.random() * Math.floor(1000000000)),
       call: JSON.parse(val)
     }
-    console.log(submitRequest)
     client.transactionSubmit(submitRequest).then(res => {
       console.log(res)
       console.log(res.transaction['id'].toString('base64'))
