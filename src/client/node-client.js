@@ -1,11 +1,12 @@
 import Debug from 'debug'
 import axios from 'axios'
 import { pb } from 'mazzaroth-proto'
+import { sign } from '../crypto/ecc-ed25519.js'
 
 const debug = Debug('mazzeltov:node-client')
 
 class Client {
-  constructor (host, privateKey, publicKey, sign) {
+  constructor (host, privateKey, publicKey, signFunc) {
     debug('host: %o', host)
     debug('private key: %o', privateKey)
     debug('public key: %o', privateKey)
@@ -16,7 +17,7 @@ class Client {
     this.publicKey = Buffer.from(publicKey || '', 'hex')
     this.transactionLookupRoute = '/transaction/lookup'
     this.transactionSubmitRoute = '/transaction/submit'
-    this.sign = sign || ((x, y) => { return Buffer.from([]) })
+    this.sign = signFunc || sign
   }
 
   transactionSubmit (txObj) {
