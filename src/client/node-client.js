@@ -14,22 +14,22 @@ class Client {
     this.host = this.host.replace(/\/+$/, '')
     this.privateKey = Buffer.from(privateKey || '', 'hex')
     this.publicKey = Buffer.from(publicKey || '', 'hex')
-    this.transactionLookupRoute = '/transaction_lookup'
-    this.transactionSubmitRoute = '/transaction_submit'
+    this.transactionLookupRoute = '/transaction/lookup'
+    this.transactionSubmitRoute = '/transaction/submit'
     this.sign = sign || ((x, y) => { return Buffer.from([]) })
   }
 
   transactionSubmit (txObj) {
     debug('Sending transaction: ' + txObj)
-    const txProto = pb.Transaction.create(txObj)
+    const txProto = pb.Transaction.fromObject(txObj)
     const txBytes = pb.Transaction.encode(txProto).finish()
-    const signedTx = pb.SignedTransaction.create({
+    const signedTx = pb.SignedTransaction.fromObject({
       transaction: txBytes,
       senderId: this.publicKey,
       signature: this.sign(this.privateKey, txBytes)
     })
 
-    const request = pb.TransactionSubmitRequest.create({
+    const request = pb.TransactionSubmitRequest.fromObject({
       transaction: signedTx
     })
     const body = JSON.stringify(request)
@@ -42,7 +42,7 @@ class Client {
 
   transactionLookup (txID) {
     debug('Looking up transaction: ' + txID)
-    const request = pb.TransactionLookupRequest.create({ id: txID })
+    const request = pb.TransactionLookupRequest.fromObject({ id: txID })
     debug(request)
     const body = JSON.stringify(request)
     return axios

@@ -1,5 +1,6 @@
-import program from 'commander'
 import Client from '../client/node-client.js'
+import program from 'commander'
+import fs from 'fs'
 
 const clientCommand = (command, desc, opts, action) => {
   let cmd = program.command(`${command} <val>`)
@@ -20,20 +21,73 @@ const clientCommand = (command, desc, opts, action) => {
   })
 }
 
-const transactionSubmitDesc = `
-Submits a transaction to a mazzaroth node. The format of <val> is a json string
-that can be formatted into a transaction protobuf:
-(https://github.com/kochavalabs/mazzaroth/blob/develop/pkg/pb/transaction.proto)
+const transactionOptions = [
+  [
+    '-c --channel_id <s>',
+    'Base64 channel ID to send transaction to. ""'
+  ]
+]
+
+const transactionCallDesc = `
+Submits a call transaction to a mazzaroth node. The format of <val> is a json
+string that can be formatted into a CallTransaction protobuf:
+(https://github.com/kochavalabs/mazzaroth-proto)
 
 Examples:
-  mazzeltov transaction-submit '{"channelId":"$ID", "call":"hello"}'
+  mazzeltov transaction-call '{"toCall":"my_func", "input":"["base64"]"}'
 `
-clientCommand('transaction-submit', transactionSubmitDesc, [],
+clientCommand('transaction-submit', transactionCallDesc, transactionOptions,
   (val, options, client) => {
-    client.transactionSubmit(JSON.parse(val)).then(res => {
+    const submitRequest = {
+      channelId: options.channel_id || '',
+      nonce: Math.floor(Math.random() * Math.floor(1000000000)),
+      call: JSON.parse(val)
+    }
+    console.log(submitRequest)
+    client.transactionSubmit(submitRequest).then(res => {
       console.log(res)
+      console.log(res.transaction['id'].toString('base64'))
     })
-      .catch(error => console.log(error.response.data))
+      .catch(error => {
+        if (error.response) {
+          console.log(error.response.data)
+        } else {
+          console.log(error)
+        }
+      })
+  })
+
+const contractUpdateDesc = `
+Submits an update transaction to a mazzaroth node. The format of <val> is a path
+to a file containing contract wasm bytes.
+(https://github.com/kochavalabs/mazzaroth-proto)
+
+Examples:
+  mazzeltov contract-update ./test/data/hello_world.wasm
+`
+clientCommand('contract-update', contractUpdateDesc, transactionOptions,
+  (val, options, client) => {
+    fs.readFile(val, (err, data) => {
+      const submitRequest = {
+        channelId: options.channel_id || '',
+        nonce: Math.floor(Math.random() * Math.floor(1000000000)),
+        update: {
+          wasmBytes: data
+        }
+      }
+      if (err) throw err
+      client.transactionSubmit(submitRequest).then(res => {
+        console.log(res)
+        console.log(res.transaction['id'].toString('base64'))
+      })
+        .catch(error => {
+          if (error.response) {
+            console.log(error.response.data)
+          } else {
+            console.log(error)
+          }
+        })
+    })
   })
 
 const transactionLookupDesc = `
@@ -41,14 +95,20 @@ Looks up the current status and results of a transaction by ID. Val is simply
 a transaction ID (an integer).
 
 Examples:
-  mazzeltov transaction-lookup 909970530173428724
+  mazzeltov transaction-lookup 7R1/5XGlwbF5r0Ijcig5AsFSC9txDGbGEmZDHfKRRAw=
 `
 clientCommand('transaction-lookup', transactionLookupDesc, [],
   (val, options, client) => {
     client.transactionLookup(val).then(res => {
       console.log(res)
     })
-      .catch(error => console.log(error.response.data))
+      .catch(error => {
+        if (error.response) {
+          console.log(error.response.data)
+        } else {
+          console.log(error)
+        }
+      })
   })
 
 program.on('command:*', function (command) {

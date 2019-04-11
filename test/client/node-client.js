@@ -48,7 +48,7 @@ describe('node client test', () => {
     it('request passed correctly', () => {
       const requestProto = pb.TransactionLookupRequest.create({ id: Buffer.from([0, 1, 2]) })
       nock(defaultRoute)
-        .post('/transaction_lookup', JSON.stringify(requestProto))
+        .post('/transaction/lookup', JSON.stringify(requestProto))
         .reply(200)
       const client = new NodeClient()
       client.transactionLookup(Buffer.from([0, 1, 2]))
@@ -62,7 +62,7 @@ describe('node client test', () => {
         result: Buffer.from([1, 3, 4])
       })
       nock(defaultRoute)
-        .post('/transaction_lookup')
+        .post('/transaction/lookup')
         .reply(200, JSON.stringify(respProto))
       const client = new NodeClient()
       client.transactionLookup('')
@@ -95,7 +95,7 @@ describe('node client test', () => {
         transaction: signedTx
       })
       nock(defaultRoute)
-        .post('/transaction_submit', JSON.stringify(expectedBody))
+        .post('/transaction/submit', JSON.stringify(expectedBody))
         .reply(200)
       const client = new NodeClient(
         defaultRoute, privKey, pubKey, fakeSign(privKey, txBytes))
@@ -107,7 +107,7 @@ describe('node client test', () => {
         transaction: pb.AcceptedTransaction.create({ id: Buffer.from([1]) })
       })
       nock(defaultRoute)
-        .post('/transaction_submit')
+        .post('/transaction/submit')
         .reply(200, JSON.stringify(respProto))
       const client = new NodeClient()
       client.transactionSubmit({}).then(resp => {
