@@ -110,6 +110,34 @@ clientCommand('transaction-lookup', transactionLookupDesc, [],
       })
   })
 
+function blockLookupCommand (lookupFunc, cmd, desc) {
+  const blockLookupDesc = `
+Looks up a ${desc} using either a block ID as base64 or block Number.
+Examples:
+  mazzeltov ${cmd} 7R1/5XGlwbF5r0Ijcig5AsFSC9txDGbGEmZDHfKRRAw=
+  mazzeltov ${cmd} 1000
+  `
+  clientCommand(cmd, blockLookupDesc, [],
+    (val, options, client) => {
+      const possibleInt = parseInt(val)
+      if (!isNaN(possibleInt) && possibleInt.toString() === val) {
+        val = possibleInt
+      }
+      client.blockLookup(val).then(res => {
+        console.log(res)
+      })
+        .catch(error => {
+          if (error.response) {
+            // console.log(error.response.data)
+          } else {
+            // console.log(error)
+          }
+        })
+    })
+}
+blockLookupCommand('blockLookup', 'block-lookup', 'Block')
+blockLookupCommand('blockHeaderLookup', 'block-header-lookup', 'Block Header')
+
 program.on('command:*', function (command) {
   program.help()
 })

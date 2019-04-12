@@ -10,12 +10,12 @@ function getBlockLookupRequestBody (attribute) {
   if ((typeof attribute) === 'number') {
     const request = pb.BlockLookupRequest.fromObject({ number: attribute })
     requestBody = JSON.stringify(request)
-    debug('Looking up transaction by number: ' + requestBody)
+    debug('Looking up block by number: ' + requestBody)
   } else {
     const id = Buffer.from(attribute, 'base64')
     const request = pb.BlockLookupRequest.fromObject({ id: id })
     requestBody = JSON.stringify(request)
-    debug('Looking up transaction by ID: ' + requestBody)
+    debug('Looking up block by ID: ' + requestBody)
   }
   return requestBody
 }
