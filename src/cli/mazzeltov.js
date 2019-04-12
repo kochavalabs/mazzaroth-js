@@ -128,9 +128,9 @@ Examples:
       })
         .catch(error => {
           if (error.response) {
-            // console.log(error.response.data)
+            console.log(error.response.data)
           } else {
-            // console.log(error)
+            console.log(error)
           }
         })
     })
