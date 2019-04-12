@@ -123,7 +123,7 @@ Examples:
       if (!isNaN(possibleInt) && possibleInt.toString() === val) {
         val = possibleInt
       }
-      client.blockLookup(val).then(res => {
+      client[lookupFunc](val).then(res => {
         console.log(res)
       })
         .catch(error => {
