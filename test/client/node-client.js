@@ -159,4 +159,48 @@ describe('node client test', () => {
         })
     })
   })
+
+  describe('block header lookup', () => {
+    it('request passed correctly buffer', () => {
+      const requestProto = pb.BlockLookupRequest.create({ id: Buffer.from([0, 1, 2]) })
+      nock(defaultRoute)
+        .post('/block/header/lookup', JSON.stringify(requestProto))
+        .reply(200)
+      const client = new NodeClient()
+      client.blockHeaderLookup(Buffer.from([0, 1, 2]))
+    })
+
+    it('request passed correctly base64', () => {
+      const requestProto = pb.BlockLookupRequest.create({ id: Buffer.from([0, 1, 2]) })
+      nock(defaultRoute)
+        .post('/block/header/lookup', JSON.stringify(requestProto))
+        .reply(200)
+      const client = new NodeClient()
+      client.blockHeaderLookup(Buffer.from([0, 1, 2]).toString('base64'))
+    })
+
+    it('request passed correctly number', () => {
+      const requestProto = pb.BlockLookupRequest.create({ number: 1234 })
+      nock(defaultRoute)
+        .post('/block/header/lookup', JSON.stringify(requestProto))
+        .reply(200)
+      const client = new NodeClient()
+      client.blockHeaderLookup(1234)
+    })
+
+    it('resp proto returned', () => {
+      const respProto = pb.BlockHeaderLookupResponse.create({
+        status: 1,
+        statusInfo: 'asdf'
+      })
+      nock(defaultRoute)
+        .post('/block/header/lookup')
+        .reply(200, JSON.stringify(respProto))
+      const client = new NodeClient()
+      client.blockHeaderLookup(0)
+        .then(resp => {
+          expect(resp).to.deep.equal(respProto)
+        })
+    })
+  })
 })

@@ -37,7 +37,7 @@
     "commander": "^2.19.0",
     "debug": "^4.1.1",
     "elliptic": "^6.4.1",
-    "mazzaroth-proto": "git+ssh://git@github.com/kochavalabs/mazzaroth-proto.git#grpc-gateway",
+    "mazzaroth-proto": "git+ssh://git@github.com/kochavalabs/mazzaroth-proto.git#develop",
     "protobufjs": "^6.8.8"
   }
 }

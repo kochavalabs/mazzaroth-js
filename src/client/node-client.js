@@ -33,6 +33,7 @@ class Client {
     this.transactionLookupRoute = '/transaction/lookup'
     this.transactionSubmitRoute = '/transaction/submit'
     this.blockLookupRoute = '/block/lookup'
+    this.blockHeaderLookupRoute = '/block/header/lookup'
     this.sign = signFunc || sign
   }
 
@@ -75,6 +76,15 @@ class Client {
       .post(this.host + this.blockLookupRoute, body)
       .then(res => {
         return pb.BlockLookupResponse.fromObject(res.data)
+      })
+  }
+
+  blockHeaderLookup (attribute) {
+    const body = getBlockLookupRequestBody(attribute)
+    return axios
+      .post(this.host + this.blockHeaderLookupRoute, body)
+      .then(res => {
+        return pb.BlockHeaderLookupResponse.fromObject(res.data)
       })
   }
 }
