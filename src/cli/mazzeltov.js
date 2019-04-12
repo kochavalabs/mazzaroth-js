@@ -36,7 +36,7 @@ string that can be formatted into a CallTransaction protobuf:
 Examples:
   mazzeltov transaction-call '{"toCall":"my_func", "input":"["base64"]"}'
 `
-clientCommand('transaction-submit', transactionCallDesc, transactionOptions,
+clientCommand('transaction-call', transactionCallDesc, transactionOptions,
   (val, options, client) => {
     const submitRequest = {
       channelId: options.channel_id || '',
