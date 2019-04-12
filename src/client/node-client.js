@@ -5,6 +5,21 @@ import { sign } from '../crypto/ecc-ed25519.js'
 
 const debug = Debug('mazzeltov:node-client')
 
+function getBlockLookupRequestBody (attribute) {
+  let requestBody = ''
+  if ((typeof attribute) === 'number') {
+    const request = pb.BlockLookupRequest.fromObject({ number: attribute })
+    requestBody = JSON.stringify(request)
+    debug('Looking up transaction by number: ' + requestBody)
+  } else {
+    const id = Buffer.from(attribute, 'base64')
+    const request = pb.BlockLookupRequest.fromObject({ id: id })
+    requestBody = JSON.stringify(request)
+    debug('Looking up transaction by ID: ' + requestBody)
+  }
+  return requestBody
+}
+
 class Client {
   constructor (host, privateKey, publicKey, signFunc) {
     debug('host: %o', host)
@@ -17,6 +32,7 @@ class Client {
     this.publicKey = Buffer.from(publicKey || '', 'hex')
     this.transactionLookupRoute = '/transaction/lookup'
     this.transactionSubmitRoute = '/transaction/submit'
+    this.blockLookupRoute = '/block/lookup'
     this.sign = signFunc || sign
   }
 
@@ -50,6 +66,15 @@ class Client {
       .post(this.host + this.transactionLookupRoute, body)
       .then(res => {
         return pb.TransactionLookupResponse.fromObject(res.data)
+      })
+  }
+
+  blockLookup (attribute) {
+    const body = getBlockLookupRequestBody(attribute)
+    return axios
+      .post(this.host + this.blockLookupRoute, body)
+      .then(res => {
+        return pb.BlockLookupResponse.fromObject(res.data)
       })
   }
 }
