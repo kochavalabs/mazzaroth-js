@@ -1,3 +1,8 @@
 import Client from './client/node-client.js'
+import { generateKeys } from './crypto/ecc-ed25519.js'
 
-export { Client }
+function AccountGenerate () {
+  return generateKeys()
+}
+
+export { Client, AccountGenerate }

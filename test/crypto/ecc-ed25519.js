@@ -1,7 +1,7 @@
 /* eslint no-unused-expressions: 0 */
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
-import { sign, verify, fromPrivate } from '../../src/crypto/ecc-ed25519.js'
+import { sign, verify, fromPrivate, generateKeys } from '../../src/crypto/ecc-ed25519.js'
 
 const privateKey = Buffer.from(
   'e0bb782b8db5fbf89c3a7ed8906883ca86afff4544c6e8f5473a2c6ebea950be',
@@ -84,6 +84,14 @@ describe('ed25519 ecc', () => {
     it('gets the corresponding public key', () => {
       expect(fromPrivate(privateKey)).to.deep.equal(publicKey)
       expect(fromPrivate(privateKey2)).to.deep.equal(publicKey2)
+    })
+  })
+
+  describe('generate keys', () => {
+    it('Generates two buffers.', () => {
+      const keys = generateKeys()
+      expect(keys['priv'].length).to.equal(32)
+      expect(keys['pub'].length).to.equal(32)
     })
   })
 })

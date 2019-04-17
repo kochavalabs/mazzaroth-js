@@ -1,10 +1,20 @@
 import Debug from 'debug'
 
-import { eddsa as EdDSA } from 'elliptic'
+import { eddsa as EdDSA, ec as EC } from 'elliptic'
 
 const debug = Debug('mazzeltov:ecc-ed25519')
 
 const sig = new EdDSA('ed25519')
+const curve = new EC('curve25519')
+
+function generateKeys () {
+  const key = curve.genKeyPair()
+  const privKey = Buffer.from('00' + key.getPrivate().toString(16), 'hex')
+  return {
+    priv: privKey,
+    pub: fromPrivate(privKey)
+  }
+}
 
 function sign (privateKey, message) {
   debug('Signing.')
@@ -31,4 +41,4 @@ function fromPrivate (privateKey) {
   return Buffer.from(sig.keyFromSecret(privateKey).getPublic())
 }
 
-export { sign, verify, fromPrivate }
+export { sign, verify, fromPrivate, generateKeys }
