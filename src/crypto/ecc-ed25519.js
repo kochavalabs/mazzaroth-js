@@ -8,11 +8,14 @@ const sig = new EdDSA('ed25519')
 const curve = new EC('curve25519')
 
 function generateKeys () {
-  const key = curve.genKeyPair()
-  const privKey = Buffer.from('00' + key.getPrivate().toString(16), 'hex')
+  let privKey = curve.genKeyPair().getPrivate().toString(16)
+  while (privKey.length < 64) {
+    privKey = '0' + privKey
+  }
+  const privBuffer = Buffer.from(privKey, 'hex')
   return {
-    priv: privKey,
-    pub: fromPrivate(privKey)
+    priv: privBuffer,
+    pub: fromPrivate(privBuffer)
   }
 }
 
