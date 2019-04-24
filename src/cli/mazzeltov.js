@@ -112,9 +112,9 @@ clientCommand('transaction-lookup', transactionLookupDesc, [],
 
 function blockLookupCommand (lookupFunc, cmd, desc) {
   const blockLookupDesc = `
-Looks up a ${desc} using either a block ID as base64 or block Number.
+Looks up a ${desc} using either a block ID as hex or block Number.
 Examples:
-  mazzeltov ${cmd} 7R1/5XGlwbF5r0Ijcig5AsFSC9txDGbGEmZDHfKRRAw=
+  mazzeltov ${cmd} 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
   mazzeltov ${cmd} 1000
   `
   clientCommand(cmd, blockLookupDesc, [],
