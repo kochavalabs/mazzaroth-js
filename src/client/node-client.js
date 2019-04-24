@@ -47,7 +47,7 @@ class Client {
     debug('action: %o', action)
     const actionXdr = ActionFromObject(action)
     const txObj = {
-      signature: this.sign(this.privateKey, Buffer.from(actionXdr.toXDR())),
+      signature: this.sign(this.privateKey, actionXdr.toXDR()),
       address: this.publicKey,
       action: action
     }

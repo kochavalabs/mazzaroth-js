@@ -110,7 +110,7 @@ describe('node client test', () => {
 
       const client = new NodeClient(
         defaultRoute, privKey, pubKey,
-        fakeSign(privKey, Buffer.from(txXdr.action().toXDR()))
+        fakeSign(privKey, txXdr.action().toXDR())
       )
 
       client.transactionSubmit(txObject.action).then(resp => {
