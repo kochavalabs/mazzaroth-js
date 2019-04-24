@@ -38,6 +38,7 @@
     "debug": "^4.1.1",
     "elliptic": "^6.4.1",
     "mazzaroth-proto": "git+ssh://git@github.com/kochavalabs/mazzaroth-proto.git#develop",
+    "mazzaroth-xdr": "git+ssh://git@github.com/kochavalabs/mazzaroth-xdr.git",
     "protobufjs": "^6.8.8"
   }
 }

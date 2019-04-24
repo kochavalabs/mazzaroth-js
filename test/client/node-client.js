@@ -6,8 +6,9 @@ import nock from 'nock'
 import NodeClient from '../../src/client/node-client.js'
 
 const defaultRoute = 'http://localhost:8081'
-const signResult = Buffer.from([1, 2, 3, 8, 5, 3])
+// const signResult = Buffer.from([1, 2, 3, 8, 5, 3])
 
+/*
 function fakeSign (ex1, ex2) {
   return (key, toSign) => {
     expect(ex1).to.deep.equal(key)
@@ -15,6 +16,7 @@ function fakeSign (ex1, ex2) {
     return signResult
   }
 }
+*/
 
 describe('node client test', () => {
   describe('construction', () => {
@@ -73,7 +75,7 @@ describe('node client test', () => {
   })
 
   describe('transaction submit', () => {
-    it('request passed and signed correctly', () => {
+  /*  it('request passed and signed correctly', () => {
       const privKey = Buffer.from([1, 4, 5, 5])
       const pubKey = Buffer.from([1, 2, 4])
       const tx = {
@@ -114,6 +116,7 @@ describe('node client test', () => {
         expect(resp).to.deep.equal(respProto)
       })
     })
+    */
   })
 
   describe('block lookup', () => {
