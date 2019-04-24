@@ -6,7 +6,7 @@ import types from 'mazzaroth-xdr'
 
 const debug = Debug('mazzeltov:node-client')
 
-const dPub = '0000000000000000000000000000000000000000000000000000000000000000'
+const dPub = '0'.repeat(64)
 const dPriv = dPub
 
 class Client {

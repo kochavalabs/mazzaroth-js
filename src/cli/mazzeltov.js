@@ -2,6 +2,8 @@ import Client from '../client/node-client.js'
 import program from 'commander'
 import fs from 'fs'
 
+const defaultChannel = '0'.repeat(64)
+
 const clientCommand = (command, desc, opts, action) => {
   let cmd = program.command(`${command} <val>`)
   cmd.description(desc)
@@ -67,15 +69,15 @@ Examples:
 clientCommand('contract-update', contractUpdateDesc, transactionOptions,
   (val, options, client) => {
     fs.readFile(val, (err, data) => {
-      const submitRequest = {
-        channelId: options.channel_id || '',
+      const action = {
+        channelId: options.channel_id || defaultChannel,
         nonce: Math.floor(Math.random() * Math.floor(1000000000)),
         update: {
-          wasmBytes: data
+          contract: data
         }
       }
       if (err) throw err
-      client.transactionSubmit(submitRequest).then(res => {
+      client.transactionSubmit(action).then(res => {
         console.log(res)
         console.log(res.transaction['id'].toString('base64'))
       })
