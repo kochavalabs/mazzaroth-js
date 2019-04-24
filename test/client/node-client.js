@@ -62,37 +62,27 @@ describe('node client test', () => {
   })
 
   describe('transaction lookup', () => {
-  /*
-    it('request passed correctly', () => {
-      const requestProto = pb.TransactionLookupRequest.create({ id: Buffer.from([0, 1, 2]) })
+    it('full request flow', () => {
+      const requestXdr = new types.TransactionLookupRequest()
+      requestXdr.transactionId(Buffer.from(x256, 'hex'))
+      const respXdr = new types.TransactionLookupResponse()
+      const txXdr = TransactionFromObject(txObject)
+      respXdr.transaction(txXdr)
+      respXdr.status(types.TransactionStatus.accepted())
+      respXdr.statusInfo('status was good.')
       nock(defaultRoute)
-        .post('/transaction/lookup', JSON.stringify(requestProto))
-        .reply(200)
+        .post('/transaction/lookup', requestXdr.toXDR('base64'))
+        .reply(200, respXdr.toXDR('base64'))
       const client = new NodeClient()
-      client.transactionLookup(Buffer.from([0, 1, 2]))
-        .then(resp => {})
-    })
-
-    it('resp proto returned', () => {
-      const respProto = pb.TransactionLookupResponse.create({
-        status: 1,
-        statusInfo: 'asdf',
-        result: Buffer.from([1, 3, 4])
-      })
-      nock(defaultRoute)
-        .post('/transaction/lookup')
-        .reply(200, JSON.stringify(respProto))
-      const client = new NodeClient()
-      client.transactionLookup('')
+      client.transactionLookup(x256)
         .then(resp => {
-          expect(resp).to.deep.equal(respProto)
+          expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
         })
     })
-    */
   })
 
-  describe('transaction submit flow', () => {
-    it('request passed and signed correctly', () => {
+  describe('transaction submit', () => {
+    it('full request flow', () => {
       const respXdr = new types.TransactionSubmitResponse()
       respXdr.transactionId(Buffer.from(x256, 'hex'))
       respXdr.status(types.TransactionStatus.accepted())

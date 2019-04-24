@@ -65,13 +65,13 @@ class Client {
 
   transactionLookup (txID) {
     debug('Looking up transaction: ' + txID)
-    const request = pb.TransactionLookupRequest.fromObject({ id: txID })
-    debug(request)
-    const body = JSON.stringify(request)
+    const requestXdr = new types.TransactionLookupRequest()
+    requestXdr.transactionId(Buffer.from(txID, 'hex'))
+    const body = requestXdr.toXDR('base64')
     return axios
       .post(this.host + this.transactionLookupRoute, body)
       .then(res => {
-        return pb.TransactionLookupResponse.fromObject(res.data)
+        return types.TransactionLookupResponse.fromXDR(res.data, 'base64')
       })
   }
 
