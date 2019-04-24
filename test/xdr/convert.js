@@ -30,16 +30,16 @@ describe('xdr convert tests', () => {
     expect(txXdr.action().nonce()).to.deep.equal(new UnsignedHyper(3))
   })
 
-  it('nonce as string', () => {
+  it('transaction common alternative formats', () => {
     const txObject = {
-      signature: x512,
-      address: x256,
+      signature: Buffer.from(x512, 'hex'),
+      address: Buffer.from(x256, 'hex'),
       action: {
         channelId: x256,
-        nonce: 3,
+        nonce: '3',
         call: {
           function: 'asdf',
-          parameters: base64
+          parameters: Buffer.from(base64, 'base64')
         }
       }
     }

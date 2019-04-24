@@ -6,26 +6,8 @@ function TransactionFromObject (toConvert) {
   if (!toConvert.action) {
     return tx
   }
-  if (toConvert.action.call && toConvert.action.update) {
-    return tx
-  }
 
-  const action = new types.Action()
-  action.channelId(Buffer.from(toConvert.action.channelId, 'hex'))
-  action.nonce(UnsignedHyper.fromString(toConvert.action.nonce.toString()))
-
-  if (toConvert.action.call) {
-    const call = new types.Call()
-    call.function(toConvert.action.call.function)
-    call.parameters(Buffer.from(toConvert.action.call.parameters, 'base64'))
-    action.category(types.ActionCategory.call(call))
-  }
-
-  if (toConvert.action.update) {
-    const update = new types.Update()
-    update.contract(Buffer.from(toConvert.action.update.contract, 'base64'))
-    action.category(types.ActionCategory.update(update))
-  }
+  const action = ActionFromObject(toConvert.action)
 
   tx.action(action)
   tx.address(Buffer.from(toConvert.address, 'hex'))
@@ -33,4 +15,23 @@ function TransactionFromObject (toConvert) {
   return tx
 }
 
-export { TransactionFromObject }
+function ActionFromObject (toConvert) {
+  const action = new types.Action()
+  action.channelId(Buffer.from(toConvert.channelId, 'hex'))
+  action.nonce(UnsignedHyper.fromString(toConvert.nonce.toString()))
+
+  if (toConvert.call) {
+    const call = new types.Call()
+    call.function(toConvert.call.function)
+    call.parameters(Buffer.from(toConvert.call.parameters, 'base64'))
+    action.category(types.ActionCategory.call(call))
+  } else if (toConvert.update) {
+    const update = new types.Update()
+    update.contract(Buffer.from(toConvert.update.contract, 'base64'))
+    action.category(types.ActionCategory.update(update))
+  }
+
+  return action
+}
+
+export { TransactionFromObject, ActionFromObject }

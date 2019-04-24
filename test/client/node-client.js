@@ -2,21 +2,36 @@ import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import { pb } from 'mazzaroth-proto'
 import nock from 'nock'
+import { TransactionFromObject } from '../../src/xdr/convert.js'
+import types from 'mazzaroth-xdr'
 
 import NodeClient from '../../src/client/node-client.js'
 
 const defaultRoute = 'http://localhost:8081'
-// const signResult = Buffer.from([1, 2, 3, 8, 5, 3])
 
-/*
+const x256 = '3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c'
+const x512 = x256 + x256
+const base64 = '9uZzPoEf1zsfABG7J6toIMio3VMY8eQnErkZTCURMu8/uwZNKkvmyBsjQBs/BWg'
+const txObject = {
+  signature: x512,
+  address: x256,
+  action: {
+    channelId: x256,
+    nonce: 3,
+    call: {
+      function: 'asdf',
+      parameters: base64
+    }
+  }
+}
+
 function fakeSign (ex1, ex2) {
   return (key, toSign) => {
     expect(ex1).to.deep.equal(key)
     expect(ex2).to.deep.equal(toSign)
-    return signResult
+    return x512
   }
 }
-*/
 
 describe('node client test', () => {
   describe('construction', () => {
@@ -47,6 +62,7 @@ describe('node client test', () => {
   })
 
   describe('transaction lookup', () => {
+  /*
     it('request passed correctly', () => {
       const requestProto = pb.TransactionLookupRequest.create({ id: Buffer.from([0, 1, 2]) })
       nock(defaultRoute)
@@ -72,51 +88,35 @@ describe('node client test', () => {
           expect(resp).to.deep.equal(respProto)
         })
     })
+    */
   })
 
-  describe('transaction submit', () => {
-  /*  it('request passed and signed correctly', () => {
-      const privKey = Buffer.from([1, 4, 5, 5])
-      const pubKey = Buffer.from([1, 2, 4])
-      const tx = {
-        channelId: Buffer.from([1, 2, 3]),
-        nonce: 2 ** 4,
-        call: {
-          toCall: 'call_this',
-          input: [Buffer.from([2, 2, 3]), Buffer.from([3, 4, 5])]
-        }
-      }
-      const txProto = pb.Transaction.fromObject(tx)
-      const txBytes = pb.Transaction.encode(txProto).finish()
-      const signedTx = pb.SignedTransaction.create({
-        transaction: txBytes,
-        senderId: pubKey,
-        signature: signResult
-      })
-      const expectedBody = pb.TransactionSubmitRequest.create({
-        transaction: signedTx
-      })
-      nock(defaultRoute)
-        .post('/transaction/submit', JSON.stringify(expectedBody))
-        .reply(200)
-      const client = new NodeClient(
-        defaultRoute, privKey, pubKey, fakeSign(privKey, txBytes))
-      client.transactionSubmit(tx).then(resp => {})
-    })
+  describe('transaction submit flow', () => {
+    it('request passed and signed correctly', () => {
+      const respXdr = new types.TransactionSubmitResponse()
+      respXdr.transactionId(Buffer.from(x256, 'hex'))
+      respXdr.status(types.TransactionStatus.accepted())
+      respXdr.statusInfo('status was good.')
 
-    it('request response handled correctly', () => {
-      const respProto = pb.TransactionSubmitResponse.create({
-        transaction: pb.AcceptedTransaction.create({ id: Buffer.from([1]) })
-      })
+      const privKey = Buffer.from([1, 4, 5, 5])
+      const pubKey = Buffer.from(x256, 'hex')
+      const txXdr = TransactionFromObject(txObject)
+
+      const expectedBody = new types.TransactionSubmitRequest()
+      expectedBody.transaction(txXdr)
       nock(defaultRoute)
-        .post('/transaction/submit')
-        .reply(200, JSON.stringify(respProto))
-      const client = new NodeClient()
-      client.transactionSubmit({}).then(resp => {
-        expect(resp).to.deep.equal(respProto)
+        .post('/transaction/submit', expectedBody.toXDR('base64'))
+        .reply(200, respXdr.toXDR('base64'))
+
+      const client = new NodeClient(
+        defaultRoute, privKey, pubKey,
+        fakeSign(privKey, Buffer.from(txXdr.action().toXDR()))
+      )
+
+      client.transactionSubmit(txObject.action).then(resp => {
+        expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
       })
     })
-    */
   })
 
   describe('block lookup', () => {
