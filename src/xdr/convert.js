@@ -1,5 +1,8 @@
+import Debug from 'debug'
 import types from 'mazzaroth-xdr'
 import { UnsignedHyper } from 'js-xdr'
+
+const debug = Debug('mazzeltov:convert')
 
 function TransactionFromObject (toConvert) {
   const tx = new types.Transaction()
@@ -34,4 +37,24 @@ function ActionFromObject (toConvert) {
   return action
 }
 
-export { TransactionFromObject, ActionFromObject }
+// Creates a block/blockHeader lookup request based on the truth value
+// of the header argument. Determins if attribute is a number of ID by checking
+// its type.
+function BlockLookupRequestFromAttribute (attribute, header) {
+  let blockLookup = new types.BlockLookupRequest()
+  if (header) {
+    blockLookup = new types.BlockHeaderLookupRequest()
+  }
+  if ((typeof attribute) === 'number') {
+    const num = UnsignedHyper.fromString(attribute.toString())
+    blockLookup.id(types.Identifier.number(num))
+    debug('Looking up block by number: %o', blockLookup)
+  } else {
+    blockLookup.id(
+      types.Identifier.hash(Buffer.from(attribute, 'hex')))
+    debug('Looking up block by ID: %o', blockLookup)
+  }
+  return blockLookup
+}
+
+export { TransactionFromObject, ActionFromObject, BlockLookupRequestFromAttribute }

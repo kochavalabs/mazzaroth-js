@@ -1,6 +1,6 @@
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
-import { TransactionFromObject } from '../../src/xdr/convert.js'
+import { TransactionFromObject, BlockLookupRequestFromAttribute } from '../../src/xdr/convert.js'
 import { UnsignedHyper } from 'js-xdr'
 
 const x256 = '3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c'
@@ -86,5 +86,31 @@ describe('xdr convert tests', () => {
     expect(txXdr.toXDR()).to.not.equal(null)
     expect(txXdr.action().category().get().contract()).to.deep.equal(
       Buffer.from(base64, 'base64'))
+  })
+})
+
+describe('block lookup request from attribute', () => {
+  it('number non-header', () => {
+    const lookupXdr = BlockLookupRequestFromAttribute(6)
+    lookupXdr.toXDR()
+    expect(lookupXdr.id().get()).to.deep.equal(new UnsignedHyper(6))
+  })
+
+  it('number header', () => {
+    const lookupXdr = BlockLookupRequestFromAttribute(6, true)
+    lookupXdr.toXDR()
+    expect(lookupXdr.id().get()).to.deep.equal(new UnsignedHyper(6))
+  })
+
+  it('hash non-header', () => {
+    const lookupXdr = BlockLookupRequestFromAttribute(x256)
+    lookupXdr.toXDR()
+    expect(lookupXdr.id().get()).to.deep.equal(Buffer.from(x256, 'hex'))
+  })
+
+  it('hash header', () => {
+    const lookupXdr = BlockLookupRequestFromAttribute(x256, true)
+    lookupXdr.toXDR()
+    expect(lookupXdr.id().get()).to.deep.equal(Buffer.from(x256, 'hex'))
   })
 })

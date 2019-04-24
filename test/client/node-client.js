@@ -1,8 +1,8 @@
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
-import { pb } from 'mazzaroth-proto'
 import nock from 'nock'
-import { TransactionFromObject } from '../../src/xdr/convert.js'
+import { TransactionFromObject, BlockLookupRequestFromAttribute } from '../../src/xdr/convert.js'
+import { UnsignedHyper } from 'js-xdr'
 import types from 'mazzaroth-xdr'
 
 import NodeClient from '../../src/client/node-client.js'
@@ -110,89 +110,57 @@ describe('node client test', () => {
   })
 
   describe('block lookup', () => {
-    it('request passed correctly buffer', () => {
-      const requestProto = pb.BlockLookupRequest.create({ id: Buffer.from([0, 1, 2]) })
-      nock(defaultRoute)
-        .post('/block/lookup', JSON.stringify(requestProto))
-        .reply(200)
-      const client = new NodeClient()
-      client.blockLookup(Buffer.from([0, 1, 2]))
-    })
+    function getBlockHeader () {
+      const header = new types.BlockHeader()
+      const hashBuffer = Buffer.from(x256, 'hex')
+      header.timestamp('asdf')
+      header.blockHeight(new UnsignedHyper(3))
+      header.txMerkleRoot(hashBuffer)
+      header.txReceiptRoot(hashBuffer)
+      header.stateRoot(hashBuffer)
+      header.previousHeader(hashBuffer)
+      header.blockProducerAddress(hashBuffer)
+      return header
+    }
 
-    it('request passed correctly base64', () => {
-      const requestProto = pb.BlockLookupRequest.create({ id: Buffer.from([0, 1, 2]) })
-      nock(defaultRoute)
-        .post('/block/lookup', JSON.stringify(requestProto))
-        .reply(200)
-      const client = new NodeClient()
-      client.blockLookup(Buffer.from([0, 1, 2]).toString('base64'))
-    })
+    function getBlock () {
+      const block = new types.Block()
+      block.header(getBlockHeader())
+      block.transactions([])
+      return block
+    }
 
-    it('request passed correctly number', () => {
-      const requestProto = pb.BlockLookupRequest.create({ number: 1234 })
+    it('block lookup request flow', () => {
+      const request = BlockLookupRequestFromAttribute(1)
+      const respXdr = new types.BlockLookupResponse()
+      const blockXdr = getBlock()
+      respXdr.block(blockXdr)
+      respXdr.status(types.BlockStatus.created())
+      respXdr.statusInfo('status was good.')
       nock(defaultRoute)
-        .post('/block/lookup', JSON.stringify(requestProto))
-        .reply(200)
+        .post('/block/lookup', request.toXDR('base64'))
+        .reply(200, respXdr.toXDR('base64'))
       const client = new NodeClient()
-      client.blockLookup(1234)
-    })
-
-    it('resp proto returned', () => {
-      const respProto = pb.BlockLookupResponse.create({
-        status: 1,
-        statusInfo: 'asdf'
-      })
-      nock(defaultRoute)
-        .post('/block/lookup')
-        .reply(200, JSON.stringify(respProto))
-      const client = new NodeClient()
-      client.blockLookup(0)
+      client.blockLookup(1)
         .then(resp => {
-          expect(resp).to.deep.equal(respProto)
+          expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
         })
     })
-  })
 
-  describe('block header lookup', () => {
-    it('request passed correctly buffer', () => {
-      const requestProto = pb.BlockLookupRequest.create({ id: Buffer.from([0, 1, 2]) })
+    it('block header lookup request flow', () => {
+      const request = BlockLookupRequestFromAttribute(1, true)
+      const respXdr = new types.BlockHeaderLookupResponse()
+      const headerXdr = getBlockHeader()
+      respXdr.header(headerXdr)
+      respXdr.status(types.BlockStatus.created())
+      respXdr.statusInfo('status was good.')
       nock(defaultRoute)
-        .post('/block/header/lookup', JSON.stringify(requestProto))
-        .reply(200)
+        .post('/block/header/lookup', request.toXDR('base64'))
+        .reply(200, respXdr.toXDR('base64'))
       const client = new NodeClient()
-      client.blockHeaderLookup(Buffer.from([0, 1, 2]))
-    })
-
-    it('request passed correctly base64', () => {
-      const requestProto = pb.BlockLookupRequest.create({ id: Buffer.from([0, 1, 2]) })
-      nock(defaultRoute)
-        .post('/block/header/lookup', JSON.stringify(requestProto))
-        .reply(200)
-      const client = new NodeClient()
-      client.blockHeaderLookup(Buffer.from([0, 1, 2]).toString('base64'))
-    })
-
-    it('request passed correctly number', () => {
-      const requestProto = pb.BlockLookupRequest.create({ number: 1234 })
-      nock(defaultRoute)
-        .post('/block/header/lookup', JSON.stringify(requestProto))
-        .reply(200)
-      const client = new NodeClient()
-      client.blockHeaderLookup(1234)
-    })
-
-    it('resp proto returned', () => {
-      const respProto = pb.BlockHeaderLookupResponse.create({
-        status: 1,
-        statusInfo: 'asdf'
-      })
-      nock(defaultRoute)
-        .post('/block/header/lookup')
-        .reply(200, JSON.stringify(respProto))
-      const client = new NodeClient()
-      client.blockHeaderLookup(0)
+      client.blockHeaderLookup(1)
         .then(resp => {
-          expect(resp).to.deep.equal(respProto)
+          expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
         })
     })
   })

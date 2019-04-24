@@ -1,29 +1,13 @@
 import Debug from 'debug'
 import axios from 'axios'
-import { pb } from 'mazzaroth-proto'
 import { sign } from '../crypto/ecc-ed25519.js'
-import { TransactionFromObject, ActionFromObject } from '../../src/xdr/convert.js'
+import { TransactionFromObject, ActionFromObject, BlockLookupRequestFromAttribute } from '../../src/xdr/convert.js'
 import types from 'mazzaroth-xdr'
 
 const debug = Debug('mazzeltov:node-client')
 
 const dPub = '0000000000000000000000000000000000000000000000000000000000000000'
 const dPriv = dPub
-
-function getBlockLookupRequestBody (attribute) {
-  let requestBody = ''
-  if ((typeof attribute) === 'number') {
-    const request = pb.BlockLookupRequest.fromObject({ number: attribute })
-    requestBody = JSON.stringify(request)
-    debug('Looking up block by number: ' + requestBody)
-  } else {
-    const id = Buffer.from(attribute, 'base64')
-    const request = pb.BlockLookupRequest.fromObject({ id: id })
-    requestBody = JSON.stringify(request)
-    debug('Looking up block by ID: ' + requestBody)
-  }
-  return requestBody
-}
 
 class Client {
   constructor (host, privateKey, publicKey, signFunc) {
@@ -76,20 +60,20 @@ class Client {
   }
 
   blockLookup (attribute) {
-    const body = getBlockLookupRequestBody(attribute)
+    const body = BlockLookupRequestFromAttribute(attribute).toXDR('base64')
     return axios
       .post(this.host + this.blockLookupRoute, body)
       .then(res => {
-        return pb.BlockLookupResponse.fromObject(res.data)
+        return types.BlockLookupResponse.fromXDR(res.data, 'base64')
       })
   }
 
   blockHeaderLookup (attribute) {
-    const body = getBlockLookupRequestBody(attribute)
+    const body = BlockLookupRequestFromAttribute(attribute).toXDR('base64')
     return axios
       .post(this.host + this.blockHeaderLookupRoute, body)
       .then(res => {
-        return pb.BlockHeaderLookupResponse.fromObject(res.data)
+        return types.BlockHeaderLookupResponse.fromXDR(res.data, 'base64')
       })
   }
 }
