@@ -1,7 +1,7 @@
 import Debug from 'debug'
 import axios from 'axios'
 import { sign } from '../crypto/ecc-ed25519.js'
-import { TransactionFromObject, ActionFromObject, BlockLookupRequestFromAttribute } from '../../src/xdr/convert.js'
+import { TransactionFromObject, ActionFromObject, BlockLookupRequestFromAttribute } from '../xdr/convert.js'
 import types from 'mazzaroth-xdr'
 
 const debug = Debug('mazzeltov:node-client')

@@ -91,10 +91,10 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
 
 const transactionLookupDesc = `
 Looks up the current status and results of a transaction by ID. Val is simply
-a transaction ID (an integer).
+a transaction ID (256 bit hex value).
 
 Examples:
-  mazzeltov transaction-lookup 7R1/5XGlwbF5r0Ijcig5AsFSC9txDGbGEmZDHfKRRAw=
+  mazzeltov transaction-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
 `
 clientCommand('transaction-lookup', transactionLookupDesc, [],
   (val, options, client) => {
