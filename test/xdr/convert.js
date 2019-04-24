@@ -17,7 +17,7 @@ describe('xdr convert tests', () => {
         nonce: 3,
         call: {
           function: 'asdf',
-          parameters: base64
+          parameters: [base64, base64]
         }
       }
     }
@@ -39,7 +39,7 @@ describe('xdr convert tests', () => {
         nonce: '3',
         call: {
           function: 'asdf',
-          parameters: Buffer.from(base64, 'base64')
+          parameters: [Buffer.from(base64, 'base64')]
         }
       }
     }
@@ -57,7 +57,7 @@ describe('xdr convert tests', () => {
         nonce: 3,
         call: {
           function: 'asdf',
-          parameters: base64
+          parameters: [base64, base64]
         }
       }
     }
@@ -66,7 +66,7 @@ describe('xdr convert tests', () => {
     expect(txXdr.toXDR()).to.not.equal(null)
     expect(txXdr.action().category().get().function()).to.equal('asdf')
     expect(txXdr.action().category().get().parameters()).to.deep.equal(
-      Buffer.from(base64, 'base64'))
+      [Buffer.from(base64, 'base64'), Buffer.from(base64, 'base64')])
   })
 
   it('transaction from object update', () => {

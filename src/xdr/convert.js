@@ -26,7 +26,11 @@ function ActionFromObject (toConvert) {
   if (toConvert.call) {
     const call = new types.Call()
     call.function(toConvert.call.function)
-    call.parameters(Buffer.from(toConvert.call.parameters, 'base64'))
+    const parameters = []
+    toConvert.call.parameters.forEach((param) => {
+      parameters.push(Buffer.from(param, 'base64'))
+    })
+    call.parameters(parameters)
     action.category(types.ActionCategory.call(call))
   } else if (toConvert.update) {
     const update = new types.Update()

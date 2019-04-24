@@ -18,9 +18,8 @@ const txObject = {
   action: {
     channelId: x256,
     nonce: 3,
-    call: {
-      function: 'asdf',
-      parameters: base64
+    update: {
+      contract: base64
     }
   }
 }
