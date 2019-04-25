@@ -23,6 +23,7 @@ class Client {
     this.transactionSubmitRoute = '/transaction/submit'
     this.blockLookupRoute = '/block/lookup'
     this.blockHeaderLookupRoute = '/block/header/lookup'
+    this.receiptLookupRoute = '/receipt/lookup'
     this.sign = signFunc || sign
   }
 
@@ -48,7 +49,7 @@ class Client {
   }
 
   transactionLookup (txID) {
-    debug('Looking up transaction: ' + txID)
+    debug('Looking up transaction with: %o', txID)
     const requestXdr = new types.TransactionLookupRequest()
     requestXdr.transactionId(Buffer.from(txID, 'hex'))
     const body = requestXdr.toXDR('base64')
@@ -60,6 +61,7 @@ class Client {
   }
 
   blockLookup (attribute) {
+    debug('Looking up block with: %o', attribute)
     const body = BlockLookupRequestFromAttribute(attribute).toXDR('base64')
     return axios
       .post(this.host + this.blockLookupRoute, body)
@@ -69,11 +71,24 @@ class Client {
   }
 
   blockHeaderLookup (attribute) {
+    debug('Looking up block header with: %o', attribute)
     const body = BlockLookupRequestFromAttribute(attribute).toXDR('base64')
     return axios
       .post(this.host + this.blockHeaderLookupRoute, body)
       .then(res => {
         return types.BlockHeaderLookupResponse.fromXDR(res.data, 'base64')
+      })
+  }
+
+  receiptLookup (txID) {
+    debug('Looking up receipt for txID: %o', txID)
+    const requestXdr = new types.ReceiptLookupRequest()
+    requestXdr.transactionId(Buffer.from(txID, 'hex'))
+    const body = requestXdr.toXDR('base64')
+    return axios
+      .post(this.host + this.receiptLookupRoute, body)
+      .then(res => {
+        return types.ReceiptLookupResponse.fromXDR(res.data, 'base64')
       })
   }
 }

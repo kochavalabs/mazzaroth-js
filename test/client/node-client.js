@@ -163,4 +163,39 @@ describe('node client test', () => {
         })
     })
   })
+
+  describe('receipt lookup', () => {
+    function getReceipt () {
+      const ev1 = new types.Event()
+      ev1.key('asdf')
+      ev1.parameters([Buffer.from(base64, 'base64')])
+      const ev2 = new types.Event()
+      ev2.key('qwer')
+      ev2.parameters([Buffer.from(base64, 'base64')])
+
+      const receipt = new types.Receipt()
+      receipt.status(types.ReceiptStatus.success())
+      receipt.stateRoot(Buffer.from(x256, 'hex'))
+      receipt.events([ev1, ev2])
+      receipt.result(Buffer.from(base64, 'base64'))
+      return receipt
+    }
+    it('receipt lookup request flow', () => {
+      const requestXdr = new types.ReceiptLookupRequest()
+      requestXdr.transactionId(Buffer.from(x256, 'hex'))
+      const respXdr = new types.ReceiptLookupResponse()
+      const receipt = getReceipt()
+      respXdr.receipt(receipt)
+      respXdr.status(types.ReceiptLookupStatus.found())
+      respXdr.statusInfo('status was good.')
+      nock(defaultRoute)
+        .post('/receipt/lookup', requestXdr.toXDR('base64'))
+        .reply(200, respXdr.toXDR('base64'))
+      const client = new NodeClient()
+      client.receiptLookup(x256)
+        .then(resp => {
+          expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
+        })
+    })
+  })
 })
