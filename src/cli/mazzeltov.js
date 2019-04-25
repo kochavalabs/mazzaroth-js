@@ -10,14 +10,17 @@ const clientCommand = (command, desc, opts, action) => {
     .option('-h --host <s>',
       'Web address of the host node default: "http://localhost:8081"')
     .option('-k --priv_key <s>',
-      'Priv key hex to sign contract with. default: "0"')
+      'Priv key hex to sign contract with.')
 
   for (const opt of opts) {
-    cmd.option(opt[0], opt[1])
+    if (opt[2]) {
+      cmd.option(opt[0], opt[1], opt[2])
+    } else {
+      cmd.option(opt[0], opt[1])
+    }
   }
   cmd.action(function (val, options) {
     options.host = options.host || 'http://localhost:8081'
-    options.priv_key = options.priv_key || '0'
     const client = new Client(options.host, options.priv_key)
     action(val, options, client)
   })
@@ -26,26 +29,39 @@ const clientCommand = (command, desc, opts, action) => {
 const transactionOptions = [
   [
     '-c --channel_id <s>',
-    'Base64 channel ID to send transaction to. ""'
+    'Base64 channel ID to send transaction to.'
+  ]
+]
+
+const callArgs = []
+const callOptions = [
+  [
+    '-a --args <args>',
+    'Arguments to the transaction call as base64 encoded strings.',
+    function (arg) {
+      callArgs.push(arg)
+    }
   ]
 ]
 
 const transactionCallDesc = `
-Submits a call transaction to a mazzaroth node. The format of <val> is a json
-string that can be formatted into a CallTransaction protobuf:
-(https://github.com/kochavalabs/mazzaroth-proto)
+Submits a call transaction to a mazzaroth node. 
+(https://github.com/kochavalabs/mazzaroth-xdr)
 
 Examples:
-  mazzeltov transaction-call '{"toCall":"my_func", "input":"["base64"]"}'
+  mazzeltov transaction-call my_func -a 9uZz -a f1zsfABG7J
 `
-clientCommand('transaction-call', transactionCallDesc, transactionOptions,
+clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat(callOptions),
   (val, options, client) => {
-    const submitRequest = {
-      channelId: options.channel_id || '',
+    const action = {
+      channelId: options.channel_id || defaultChannel,
       nonce: Math.floor(Math.random() * Math.floor(1000000000)),
-      call: JSON.parse(val)
+      call: {
+        function: val,
+        parameters: callArgs
+      }
     }
-    client.transactionSubmit(submitRequest).then(res => {
+    client.transactionSubmit(action).then(res => {
       console.log(res)
       console.log(res.transaction['id'].toString('base64'))
     })
@@ -61,7 +77,7 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions,
 const contractUpdateDesc = `
 Submits an update transaction to a mazzaroth node. The format of <val> is a path
 to a file containing contract wasm bytes.
-(https://github.com/kochavalabs/mazzaroth-proto)
+(https://github.com/kochavalabs/mazzaroth-xdr)
 
 Examples:
   mazzeltov contract-update ./test/data/hello_world.wasm
