@@ -108,8 +108,8 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
   })
 
 const transactionLookupDesc = `
-Looks up the current status and results of a transaction by ID. Val is simply
-a transaction ID (256 bit hex value).
+Looks up the current status and results of a transaction by ID. Val is  a
+transaction ID (256 bit hex value).
 
 Examples:
   mazzeltov transaction-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
@@ -155,6 +155,26 @@ Examples:
 }
 blockLookupCommand('blockLookup', 'block-lookup', 'Block')
 blockLookupCommand('blockHeaderLookup', 'block-header-lookup', 'Block Header')
+
+const receiptLookupDesc = `
+Looks up a transaction receipt. Val is a transaction ID (256 bit hex value).
+
+Examples:
+  mazzeltov receipt-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
+`
+clientCommand('receipt-lookup', receiptLookupDesc, [],
+  (val, options, client) => {
+    client.receiptLookup(val).then(res => {
+      console.log(res)
+    })
+      .catch(error => {
+        if (error.response) {
+          console.log(error.response.data)
+        } else {
+          console.log(error)
+        }
+      })
+  })
 
 program.on('command:*', function (command) {
   program.help()
