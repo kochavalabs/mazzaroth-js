@@ -54,7 +54,7 @@ Examples:
 clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat(callOptions),
   (val, options, client) => {
     const action = {
-      channelId: options.channel_id || defaultChannel,
+      channelID: options.channel_id || defaultChannel,
       nonce: Math.floor(Math.random() * Math.floor(1000000000)),
       call: {
         function: val,
@@ -86,7 +86,7 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
   (val, options, client) => {
     fs.readFile(val, (err, data) => {
       const action = {
-        channelId: options.channel_id || defaultChannel,
+        channelID: options.channel_id || defaultChannel,
         nonce: Math.floor(Math.random() * Math.floor(1000000000)),
         update: {
           contract: data

@@ -13,7 +13,7 @@ describe('xdr convert tests', () => {
       signature: x512,
       address: x256,
       action: {
-        channelId: x256,
+        channelID: x256,
         nonce: 3,
         call: {
           function: 'asdf',
@@ -26,7 +26,7 @@ describe('xdr convert tests', () => {
 
     expect(txXdr.signature()).to.deep.equal(Buffer.from(x512, 'hex'))
     expect(txXdr.address()).to.deep.equal(Buffer.from(x256, 'hex'))
-    expect(txXdr.action().channelId()).to.deep.equal(Buffer.from(x256, 'hex'))
+    expect(txXdr.action().channelID()).to.deep.equal(Buffer.from(x256, 'hex'))
     expect(txXdr.action().nonce()).to.deep.equal(new UnsignedHyper(3))
   })
 
@@ -35,7 +35,7 @@ describe('xdr convert tests', () => {
       signature: Buffer.from(x512, 'hex'),
       address: Buffer.from(x256, 'hex'),
       action: {
-        channelId: x256,
+        channelID: x256,
         nonce: '3',
         call: {
           function: 'asdf',
@@ -53,7 +53,7 @@ describe('xdr convert tests', () => {
       signature: x512,
       address: x256,
       action: {
-        channelId: x256,
+        channelID: x256,
         nonce: 3,
         call: {
           function: 'asdf',
@@ -74,7 +74,7 @@ describe('xdr convert tests', () => {
       signature: x512,
       address: x256,
       action: {
-        channelId: x256,
+        channelID: x256,
         nonce: 3,
         update: {
           contract: base64
@@ -93,24 +93,24 @@ describe('block lookup request from attribute', () => {
   it('number non-header', () => {
     const lookupXdr = BlockLookupRequestFromAttribute(6)
     lookupXdr.toXDR()
-    expect(lookupXdr.id().get()).to.deep.equal(new UnsignedHyper(6))
+    expect(lookupXdr.ID().get()).to.deep.equal(new UnsignedHyper(6))
   })
 
   it('number header', () => {
     const lookupXdr = BlockLookupRequestFromAttribute(6, true)
     lookupXdr.toXDR()
-    expect(lookupXdr.id().get()).to.deep.equal(new UnsignedHyper(6))
+    expect(lookupXdr.ID().get()).to.deep.equal(new UnsignedHyper(6))
   })
 
   it('hash non-header', () => {
     const lookupXdr = BlockLookupRequestFromAttribute(x256)
     lookupXdr.toXDR()
-    expect(lookupXdr.id().get()).to.deep.equal(Buffer.from(x256, 'hex'))
+    expect(lookupXdr.ID().get()).to.deep.equal(Buffer.from(x256, 'hex'))
   })
 
   it('hash header', () => {
     const lookupXdr = BlockLookupRequestFromAttribute(x256, true)
     lookupXdr.toXDR()
-    expect(lookupXdr.id().get()).to.deep.equal(Buffer.from(x256, 'hex'))
+    expect(lookupXdr.ID().get()).to.deep.equal(Buffer.from(x256, 'hex'))
   })
 })

@@ -20,7 +20,7 @@ function TransactionFromObject (toConvert) {
 
 function ActionFromObject (toConvert) {
   const action = new types.Action()
-  action.channelId(Buffer.from(toConvert.channelId, 'hex'))
+  action.channelID(Buffer.from(toConvert.channelID, 'hex'))
   action.nonce(UnsignedHyper.fromString(toConvert.nonce.toString()))
 
   if (toConvert.call) {
@@ -31,11 +31,11 @@ function ActionFromObject (toConvert) {
       parameters.push(Buffer.from(param, 'base64'))
     })
     call.parameters(parameters)
-    action.category(types.ActionCategory.call(call))
+    action.category(types.ActionCategory.CALL(call))
   } else if (toConvert.update) {
     const update = new types.Update()
     update.contract(Buffer.from(toConvert.update.contract, 'base64'))
-    action.category(types.ActionCategory.update(update))
+    action.category(types.ActionCategory.UPDATE(update))
   }
 
   return action
@@ -51,11 +51,11 @@ function BlockLookupRequestFromAttribute (attribute, header) {
   }
   if ((typeof attribute) === 'number') {
     const num = UnsignedHyper.fromString(attribute.toString())
-    blockLookup.id(types.Identifier.number(num))
+    blockLookup.ID(types.Identifier.NUMBER(num))
     debug('Looking up block by number: %o', blockLookup)
   } else {
-    blockLookup.id(
-      types.Identifier.hash(Buffer.from(attribute, 'hex')))
+    blockLookup.ID(
+      types.Identifier.HASH(Buffer.from(attribute, 'hex')))
     debug('Looking up block by ID: %o', blockLookup)
   }
   return blockLookup

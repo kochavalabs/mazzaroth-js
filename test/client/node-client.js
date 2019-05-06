@@ -16,7 +16,7 @@ const txObject = {
   signature: x512,
   address: x256,
   action: {
-    channelId: x256,
+    channelID: x256,
     nonce: 3,
     update: {
       contract: base64
@@ -63,11 +63,11 @@ describe('node client test', () => {
   describe('transaction lookup', () => {
     it('full request flow', () => {
       const requestXdr = new types.TransactionLookupRequest()
-      requestXdr.transactionId(Buffer.from(x256, 'hex'))
+      requestXdr.transactionID(Buffer.from(x256, 'hex'))
       const respXdr = new types.TransactionLookupResponse()
       const txXdr = TransactionFromObject(txObject)
       respXdr.transaction(txXdr)
-      respXdr.status(types.TransactionStatus.accepted())
+      respXdr.status(types.TransactionStatus.ACCEPTED())
       respXdr.statusInfo('status was good.')
       nock(defaultRoute)
         .post('/transaction/lookup', requestXdr.toXDR('base64'))
@@ -83,8 +83,8 @@ describe('node client test', () => {
   describe('transaction submit', () => {
     it('full request flow', () => {
       const respXdr = new types.TransactionSubmitResponse()
-      respXdr.transactionId(Buffer.from(x256, 'hex'))
-      respXdr.status(types.TransactionStatus.accepted())
+      respXdr.transactionID(Buffer.from(x256, 'hex'))
+      respXdr.status(types.TransactionStatus.ACCEPTED())
       respXdr.statusInfo('status was good.')
 
       const privKey = Buffer.from([1, 4, 5, 5])
@@ -134,7 +134,7 @@ describe('node client test', () => {
       const respXdr = new types.BlockLookupResponse()
       const blockXdr = getBlock()
       respXdr.block(blockXdr)
-      respXdr.status(types.BlockStatus.created())
+      respXdr.status(types.BlockStatus.CREATED())
       respXdr.statusInfo('status was good.')
       nock(defaultRoute)
         .post('/block/lookup', request.toXDR('base64'))
@@ -151,7 +151,7 @@ describe('node client test', () => {
       const respXdr = new types.BlockHeaderLookupResponse()
       const headerXdr = getBlockHeader()
       respXdr.header(headerXdr)
-      respXdr.status(types.BlockStatus.created())
+      respXdr.status(types.BlockStatus.CREATED())
       respXdr.statusInfo('status was good.')
       nock(defaultRoute)
         .post('/block/header/lookup', request.toXDR('base64'))
@@ -174,7 +174,7 @@ describe('node client test', () => {
       ev2.parameters([Buffer.from(base64, 'base64')])
 
       const receipt = new types.Receipt()
-      receipt.status(types.ReceiptStatus.success())
+      receipt.status(types.ReceiptStatus.SUCCESS())
       receipt.stateRoot(Buffer.from(x256, 'hex'))
       receipt.events([ev1, ev2])
       receipt.result(Buffer.from(base64, 'base64'))
@@ -182,11 +182,11 @@ describe('node client test', () => {
     }
     it('receipt lookup request flow', () => {
       const requestXdr = new types.ReceiptLookupRequest()
-      requestXdr.transactionId(Buffer.from(x256, 'hex'))
+      requestXdr.transactionID(Buffer.from(x256, 'hex'))
       const respXdr = new types.ReceiptLookupResponse()
       const receipt = getReceipt()
       respXdr.receipt(receipt)
-      respXdr.status(types.ReceiptLookupStatus.found())
+      respXdr.status(types.ReceiptLookupStatus.FOUND())
       respXdr.statusInfo('status was good.')
       nock(defaultRoute)
         .post('/receipt/lookup', requestXdr.toXDR('base64'))

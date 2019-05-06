@@ -51,7 +51,7 @@ class Client {
   transactionLookup (txID) {
     debug('Looking up transaction with: %o', txID)
     const requestXdr = new types.TransactionLookupRequest()
-    requestXdr.transactionId(Buffer.from(txID, 'hex'))
+    requestXdr.transactionID(Buffer.from(txID, 'hex'))
     const body = requestXdr.toXDR('base64')
     return axios
       .post(this.host + this.transactionLookupRoute, body)
@@ -83,7 +83,7 @@ class Client {
   receiptLookup (txID) {
     debug('Looking up receipt for txID: %o', txID)
     const requestXdr = new types.ReceiptLookupRequest()
-    requestXdr.transactionId(Buffer.from(txID, 'hex'))
+    requestXdr.transactionID(Buffer.from(txID, 'hex'))
     const body = requestXdr.toXDR('base64')
     return axios
       .post(this.host + this.receiptLookupRoute, body)
