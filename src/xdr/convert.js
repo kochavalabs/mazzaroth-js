@@ -1,8 +1,35 @@
 import Debug from 'debug'
 import types from 'mazzaroth-xdr'
 import { UnsignedHyper } from 'js-xdr'
+import BaseCursor from 'cursor'
 
 const debug = Debug('mazzeltov:convert')
+
+export function calculatePadding (length) {
+  switch (length % 4) {
+    case 0:
+      return 0
+    case 1:
+      return 3
+    case 2:
+      return 2
+    case 3:
+      return 1
+    default:
+      return null
+  }
+}
+
+class Cursor extends BaseCursor {
+  writeBufferPadded (buffer) {
+    const padding = calculatePadding(buffer.length)
+    const paddingBuffer = Buffer.alloc(padding)
+
+    return this.copyFrom(new Cursor(buffer)).copyFrom(
+      new Cursor(paddingBuffer)
+    )
+  }
+}
 
 function TransactionFromObject (toConvert) {
   const tx = new types.Transaction()
@@ -61,4 +88,14 @@ function BlockLookupRequestFromAttribute (attribute, header) {
   return blockLookup
 }
 
-export { TransactionFromObject, ActionFromObject, BlockLookupRequestFromAttribute }
+// Write an object to xdr using a larger buffer specifically used for contract
+// related transactions.
+function LargeToXDR (xdrObject, type) {
+  const cursor = new Cursor(Math.pow(2, 30))
+  type.write(xdrObject, cursor)
+  const bytesWritten = cursor.tell()
+  cursor.rewind()
+  return cursor.slice(bytesWritten).buffer()
+}
+
+export { TransactionFromObject, ActionFromObject, BlockLookupRequestFromAttribute, LargeToXDR }

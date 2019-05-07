@@ -63,7 +63,7 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
     }
     client.transactionSubmit(action).then(res => {
       console.log(res)
-      console.log(res.transaction['id'].toString('base64'))
+      console.log(res.transactionID().toString('hex'))
     })
       .catch(error => {
         if (error.response) {
@@ -95,7 +95,7 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
       if (err) throw err
       client.transactionSubmit(action).then(res => {
         console.log(res)
-        console.log(res.transaction['id'].toString('base64'))
+        console.log(res.transactionID().toString('hex'))
       })
         .catch(error => {
           if (error.response) {

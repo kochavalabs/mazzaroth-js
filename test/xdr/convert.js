@@ -1,6 +1,9 @@
+import fs from 'fs'
+import types from 'mazzaroth-xdr'
+
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
-import { TransactionFromObject, BlockLookupRequestFromAttribute } from '../../src/xdr/convert.js'
+import { TransactionFromObject, BlockLookupRequestFromAttribute, LargeToXDR } from '../../src/xdr/convert.js'
 import { UnsignedHyper } from 'js-xdr'
 
 const x256 = '3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c'
@@ -112,5 +115,37 @@ describe('block lookup request from attribute', () => {
     const lookupXdr = BlockLookupRequestFromAttribute(x256, true)
     lookupXdr.toXDR()
     expect(lookupXdr.ID().get()).to.deep.equal(Buffer.from(x256, 'hex'))
+  })
+})
+
+describe('transaction size tests', () => {
+  const txObject = {
+    signature: x512,
+    address: x256,
+    action: {
+      channelID: x256,
+      nonce: 3,
+      update: {
+        contract: ''
+      }
+    }
+  }
+
+  it('full contract from file base64', () => {
+    const data = fs.readFileSync('test/data/hello_world.wasm')
+    txObject.action.update.contract = data
+    const txXdr = TransactionFromObject(txObject)
+    const bytes = LargeToXDR(txXdr, types.Transaction)
+    const reSerialize = types.Transaction.fromXDR(bytes)
+    expect(reSerialize.toXDR()).to.deep.equal(txXdr.toXDR())
+  })
+
+  it('small contract from file base64', () => {
+    const data = fs.readFileSync('test/data/small_invalid.wasm')
+    txObject.action.update.contract = data
+    const txXdr = TransactionFromObject(txObject)
+    const bytes = LargeToXDR(txXdr, types.Transaction)
+    const reSerialize = types.Transaction.fromXDR(bytes)
+    expect(reSerialize.toXDR()).to.deep.equal(txXdr.toXDR())
   })
 })

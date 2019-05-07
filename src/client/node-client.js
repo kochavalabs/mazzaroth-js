@@ -1,7 +1,7 @@
 import Debug from 'debug'
 import axios from 'axios'
 import { sign } from '../crypto/ecc-ed25519.js'
-import { TransactionFromObject, ActionFromObject, BlockLookupRequestFromAttribute } from '../xdr/convert.js'
+import { TransactionFromObject, ActionFromObject, BlockLookupRequestFromAttribute, LargeToXDR } from '../xdr/convert.js'
 import types from 'mazzaroth-xdr'
 
 const debug = Debug('mazzeltov:node-client')
@@ -40,7 +40,7 @@ class Client {
     const request = new types.TransactionSubmitRequest()
     request.transaction(txXdr)
 
-    const body = request.toXDR('base64')
+    const body = LargeToXDR(request, types.TransactionSubmitRequest).toString('base64')
     return axios
       .post(this.host + this.transactionSubmitRoute, body)
       .then(res => {
