@@ -62,8 +62,9 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
       }
     }
     client.transactionSubmit(action).then(res => {
-      console.log(res)
-      console.log(res.transactionID().toString('hex'))
+      console.log(JSON.stringify(res._attributes))
+      console.log()
+      console.log('TxID: ' + res.transactionID().toString('hex'))
     })
       .catch(error => {
         if (error.response) {
@@ -94,7 +95,7 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
       }
       if (err) throw err
       client.transactionSubmit(action).then(res => {
-        console.log(res)
+        console.log(JSON.stringify(res._attributes))
         console.log(res.transactionID().toString('hex'))
       })
         .catch(error => {
@@ -117,7 +118,7 @@ Examples:
 clientCommand('transaction-lookup', transactionLookupDesc, [],
   (val, options, client) => {
     client.transactionLookup(val).then(res => {
-      console.log(res)
+      console.log(JSON.stringify(res._attributes))
     })
       .catch(error => {
         if (error.response) {
@@ -142,7 +143,7 @@ Examples:
         val = possibleInt
       }
       client[lookupFunc](val).then(res => {
-        console.log(res)
+        console.log(JSON.stringify(res._attributes))
       })
         .catch(error => {
           if (error.response) {
@@ -165,7 +166,7 @@ Examples:
 clientCommand('receipt-lookup', receiptLookupDesc, [],
   (val, options, client) => {
     client.receiptLookup(val).then(res => {
-      console.log(res)
+      console.log(JSON.stringify(res._attributes))
     })
       .catch(error => {
         if (error.response) {
