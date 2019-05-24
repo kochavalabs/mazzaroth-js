@@ -94,7 +94,7 @@ class Client {
   }
 
   nonceLookup () {
-    debug('Looking up nonce for account: %o', this.publicKey)
+    debug('Looking up nonce for account: %o', this.publicKey.toString('hex'))
     const nonceLookupRequest = new types.AccountNonceLookupRequest()
     nonceLookupRequest.account(this.publicKey)
     const body = nonceLookupRequest.toXDR('base64')

@@ -30,7 +30,12 @@ const transactionOptions = [
   [
     '-c --channel_id <s>',
     'Base64 channel ID to send transaction to.'
+  ],
+  [
+    '-n --nonce <s>',
+    'Nonce to sent the request with.'
   ]
+
 ]
 
 const callArgs = []
@@ -55,7 +60,7 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
   (val, options, client) => {
     const action = {
       channelID: options.channel_id || defaultChannel,
-      nonce: Math.floor(Math.random() * Math.floor(1000000000)),
+      nonce: options.nonce || Math.floor(Math.random() * Math.floor(1000000000)),
       call: {
         function: val,
         parameters: callArgs
@@ -88,7 +93,7 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
     fs.readFile(val, (err, data) => {
       const action = {
         channelID: options.channel_id || defaultChannel,
-        nonce: Math.floor(Math.random() * Math.floor(1000000000)),
+        nonce: options.nonce || Math.floor(Math.random() * Math.floor(1000000000)),
         update: {
           contract: data
         }
@@ -167,6 +172,28 @@ clientCommand('receipt-lookup', receiptLookupDesc, [],
   (val, options, client) => {
     client.receiptLookup(val).then(res => {
       console.log(JSON.stringify(res._attributes))
+    })
+      .catch(error => {
+        if (error.response) {
+          console.log(error.response.data)
+        } else {
+          console.log(error)
+        }
+      })
+  })
+
+const nonceLookupDesc = `
+Looks up the current nonce for an account, Val is an account ID (256 bit hex value).
+
+Examples:
+  mazzeltov nonce-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
+`
+clientCommand('nonce-lookup', nonceLookupDesc, [],
+  (val, options, client) => {
+    client.publicKey = Buffer.from(val, 'hex')
+    client.nonceLookup().then(res => {
+      console.log(JSON.stringify(res._attributes))
+      console.log('Nonce: ' + res.nonce())
     })
       .catch(error => {
         if (error.response) {
