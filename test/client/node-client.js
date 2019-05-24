@@ -61,7 +61,7 @@ describe('node client test', () => {
   })
 
   describe('transaction lookup', () => {
-    it('full request flow', () => {
+    it('full request flow', (done) => {
       const requestXdr = new types.TransactionLookupRequest()
       requestXdr.transactionID(Buffer.from(x256, 'hex'))
       const respXdr = new types.TransactionLookupResponse()
@@ -76,12 +76,13 @@ describe('node client test', () => {
       client.transactionLookup(x256)
         .then(resp => {
           expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
+          done()
         })
     })
   })
 
   describe('transaction submit', () => {
-    it('full request flow', () => {
+    it('full request flow', (done) => {
       const respXdr = new types.TransactionSubmitResponse()
       respXdr.transactionID(Buffer.from(x256, 'hex'))
       respXdr.status(types.TransactionStatus.ACCEPTED())
@@ -104,6 +105,7 @@ describe('node client test', () => {
 
       client.transactionSubmit(txObject.action).then(resp => {
         expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
+        done()
       })
     })
   })
@@ -129,7 +131,7 @@ describe('node client test', () => {
       return block
     }
 
-    it('block lookup request flow', () => {
+    it('block lookup request flow', (done) => {
       const request = BlockLookupRequestFromAttribute(1)
       const respXdr = new types.BlockLookupResponse()
       const blockXdr = getBlock()
@@ -143,10 +145,11 @@ describe('node client test', () => {
       client.blockLookup(1)
         .then(resp => {
           expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
+          done()
         })
     })
 
-    it('block header lookup request flow', () => {
+    it('block header lookup request flow', (done) => {
       const request = BlockLookupRequestFromAttribute(1, true)
       const respXdr = new types.BlockHeaderLookupResponse()
       const headerXdr = getBlockHeader()
@@ -160,6 +163,7 @@ describe('node client test', () => {
       client.blockHeaderLookup(1)
         .then(resp => {
           expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
+          done()
         })
     })
   })
@@ -180,7 +184,7 @@ describe('node client test', () => {
       receipt.result(Buffer.from(base64, 'base64'))
       return receipt
     }
-    it('receipt lookup request flow', () => {
+    it('receipt lookup request flow', (done) => {
       const requestXdr = new types.ReceiptLookupRequest()
       requestXdr.transactionID(Buffer.from(x256, 'hex'))
       const respXdr = new types.ReceiptLookupResponse()
@@ -195,6 +199,27 @@ describe('node client test', () => {
       client.receiptLookup(x256)
         .then(resp => {
           expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
+          done()
+        })
+    })
+  })
+
+  describe('nonce lookup', () => {
+    it('nonce lookup request flow', (done) => {
+      const requestXdr = new types.AccountNonceLookupRequest()
+      requestXdr.account(Buffer.from(x256, 'hex'))
+      const respXdr = new types.AccountNonceLookupResponse()
+      respXdr.nonce(new UnsignedHyper(3))
+      respXdr.status(types.NonceLookupStatus.FOUND())
+      respXdr.statusInfo('status was cool.')
+      nock(defaultRoute)
+        .post('/nonce/lookup', requestXdr.toXDR('base64'))
+        .reply(200, respXdr.toXDR('base64'))
+      const client = new NodeClient(defaultRoute, '1abc', x256)
+      client.nonceLookup()
+        .then(resp => {
+          expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
+          done()
         })
     })
   })
