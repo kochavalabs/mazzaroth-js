@@ -1,6 +1,6 @@
 import Debug from 'debug'
 import axios from 'axios'
-import { sign } from '../crypto/ecc-ed25519.js'
+import { sign, fromPrivate } from '../crypto/ecc-ed25519.js'
 import { TransactionFromObject, ActionFromObject, BlockLookupRequestFromAttribute, LargeToXDR } from '../xdr/convert.js'
 import types from 'mazzaroth-xdr'
 
@@ -10,15 +10,19 @@ const dPub = '0'.repeat(64)
 const dPriv = dPub
 
 class Client {
-  constructor (host, privateKey, publicKey, signFunc) {
+  constructor (host, privateKey, signFunc) {
     debug('host: %o', host)
     debug('private key: %o', privateKey)
-    debug('public key: %o', privateKey)
     debug('sign: %o', sign)
+
+    // Get Public key
+    const publicKey = fromPrivate(privateKey)
+
+    debug('public key: %o', publicKey.toString('hex'))
     this.host = host || 'http://localhost:8081'
     this.host = this.host.replace(/\/+$/, '')
-    this.privateKey = Buffer.from(privateKey || dPub, 'hex')
-    this.publicKey = Buffer.from(publicKey || dPriv, 'hex')
+    this.privateKey = Buffer.from(privateKey || dPriv, 'hex')
+    this.publicKey = publicKey
     this.transactionLookupRoute = '/transaction/lookup'
     this.transactionSubmitRoute = '/transaction/submit'
     this.blockLookupRoute = '/block/lookup'
@@ -31,9 +35,10 @@ class Client {
   transactionSubmit (action) {
     debug('Sending transaction')
     debug('action: %o', action)
+    debug('address: %o', this.publicKey)
     const actionXdr = ActionFromObject(action)
     const txObj = {
-      signature: this.sign(this.privateKey, actionXdr.toXDR()),
+      signature: this.sign(this.privateKey, LargeToXDR(actionXdr, types.Action)),
       address: this.publicKey,
       action: action
     }
