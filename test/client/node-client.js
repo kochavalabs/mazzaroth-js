@@ -4,6 +4,7 @@ import nock from 'nock'
 import { TransactionFromObject, BlockLookupRequestFromAttribute } from '../../src/xdr/convert.js'
 import { UnsignedHyper } from 'js-xdr'
 import types from 'mazzaroth-xdr'
+import { fromPrivate } from '../../src/crypto/ecc-ed25519.js'
 
 import NodeClient from '../../src/client/node-client.js'
 
@@ -35,10 +36,9 @@ function fakeSign (ex1, ex2) {
 describe('node client test', () => {
   describe('construction', () => {
     it('should pass values', () => {
-      const client = new NodeClient(defaultRoute, 'ff01', 'ff02', 'a')
+      const client = new NodeClient(defaultRoute, 'ff01', 'a')
       expect(client.host).to.equal(defaultRoute)
       expect(client.privateKey).to.deep.equal(Buffer.from([255, 1]))
-      expect(client.publicKey).to.deep.equal(Buffer.from([255, 2]))
       expect(client.sign).to.equal('a')
     })
 
@@ -52,11 +52,9 @@ describe('node client test', () => {
     it('accept buffer for key', () => {
       const client = new NodeClient(
         defaultRoute,
-        Buffer.from([1, 3, 4]),
-        Buffer.from([1, 1, 4])
+        Buffer.from([1, 3, 4])
       )
       expect(client.privateKey).to.deep.equal(Buffer.from([1, 3, 4]))
-      expect(client.publicKey).to.deep.equal(Buffer.from([1, 1, 4]))
     })
   })
 
@@ -89,8 +87,19 @@ describe('node client test', () => {
       respXdr.statusInfo('status was good.')
 
       const privKey = Buffer.from([1, 4, 5, 5])
-      const pubKey = Buffer.from(x256, 'hex')
-      const txXdr = TransactionFromObject(txObject)
+      const pubKey = fromPrivate(privKey)
+      const request = {
+        signature: x512,
+        address: pubKey,
+        action: {
+          channelID: x256,
+          nonce: 3,
+          update: {
+            contract: base64
+          }
+        }
+      }
+      const txXdr = TransactionFromObject(request)
 
       const expectedBody = new types.TransactionSubmitRequest()
       expectedBody.transaction(txXdr)
@@ -99,7 +108,7 @@ describe('node client test', () => {
         .reply(200, respXdr.toXDR('base64'))
 
       const client = new NodeClient(
-        defaultRoute, privKey, pubKey,
+        defaultRoute, privKey,
         fakeSign(privKey, txXdr.action().toXDR())
       )
 
@@ -207,7 +216,8 @@ describe('node client test', () => {
   describe('nonce lookup', () => {
     it('nonce lookup request flow', (done) => {
       const requestXdr = new types.AccountNonceLookupRequest()
-      requestXdr.account(Buffer.from(x256, 'hex'))
+      const pubKey = fromPrivate('1abc')
+      requestXdr.account(pubKey)
       const respXdr = new types.AccountNonceLookupResponse()
       respXdr.nonce(new UnsignedHyper(3))
       respXdr.status(types.NonceLookupStatus.FOUND())
@@ -215,7 +225,7 @@ describe('node client test', () => {
       nock(defaultRoute)
         .post('/nonce/lookup', requestXdr.toXDR('base64'))
         .reply(200, respXdr.toXDR('base64'))
-      const client = new NodeClient(defaultRoute, '1abc', x256)
+      const client = new NodeClient(defaultRoute, '1abc')
       client.nonceLookup()
         .then(resp => {
           expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
