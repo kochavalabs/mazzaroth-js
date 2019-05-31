@@ -101,8 +101,6 @@ describe('node client test', () => {
       }
       const txXdr = TransactionFromObject(request)
 
-      console.log(pubKey)
-
       const expectedBody = new types.TransactionSubmitRequest()
       expectedBody.transaction(txXdr)
       nock(defaultRoute)
