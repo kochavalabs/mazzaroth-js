@@ -80,6 +80,36 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
       })
   })
 
+const readonlyCallDesc = `
+Submits a readonly call transaction to a mazzaroth node. 
+(https://github.com/kochavalabs/mazzaroth-xdr)
+
+Examples:
+  mazzeltov readonly-call my_func -a 9uZz -a f1zsfABG7J
+`
+clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callOptions),
+  (val, options, client) => {
+    const action = {
+      channelID: options.channel_id || defaultChannel,
+      nonce: 0,
+      call: {
+        function: val,
+        parameters: callArgs
+      }
+    }
+    client.readonlySubmit(action).then(res => {
+      console.log(`Receipt: ` + JSON.stringify(res._attributes.receipt))
+      console.log(`Status: ` + res._attributes.statusInfo.toString())
+    })
+      .catch(error => {
+        if (error.response) {
+          console.log(error.response.data)
+        } else {
+          console.log(error)
+        }
+      })
+  })
+
 const contractUpdateDesc = `
 Submits an update transaction to a mazzaroth node. The format of <val> is a path
 to a file containing contract wasm bytes.

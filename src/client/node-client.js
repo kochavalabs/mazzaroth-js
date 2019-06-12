@@ -8,6 +8,7 @@ const debug = Debug('mazzeltov:node-client')
 
 const dPub = '0'.repeat(64)
 const dPriv = dPub
+const dSig = dPub + dPub
 
 class Client {
   constructor (host, privateKey, signFunc) {
@@ -25,6 +26,7 @@ class Client {
     this.publicKey = publicKey
     this.transactionLookupRoute = '/transaction/lookup'
     this.transactionSubmitRoute = '/transaction/submit'
+    this.transactionReadonlyRoute = '/transaction/readonly'
     this.blockLookupRoute = '/block/lookup'
     this.blockHeaderLookupRoute = '/block/header/lookup'
     this.receiptLookupRoute = '/receipt/lookup'
@@ -51,6 +53,28 @@ class Client {
       .post(this.host + this.transactionSubmitRoute, body)
       .then(res => {
         return types.TransactionSubmitResponse.fromXDR(res.data, 'base64')
+      })
+  }
+
+  readonlySubmit (action) {
+    debug('Sending readonly transaction')
+    debug('action: %o', action)
+    debug('address: %o', this.publicKey)
+    const txObj = {
+      signature: Buffer.from(dSig, 'hex'), // Default sig, not used for readonly transactions
+      address: this.publicKey,
+      action: action
+    }
+    const txXdr = TransactionFromObject(txObj)
+    const request = new types.TransactionReadonlyRequest()
+    request.transaction(txXdr)
+
+    const body = LargeToXDR(request, types.TransactionReadonlyRequest).toString('base64')
+
+    return axios
+      .post(this.host + this.transactionReadonlyRoute, body)
+      .then(res => {
+        return types.TransactionReadonlyResponse.fromXDR(res.data, 'base64')
       })
   }
 
