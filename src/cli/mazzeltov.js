@@ -68,7 +68,7 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
     }
     client.transactionSubmit(action).then(res => {
       console.log(JSON.stringify(res._attributes))
-      console.log()
+      console.log(`Status: ` + res._attributes.statusInfo.toString())
       console.log('TxID: ' + res.transactionID().toString('hex'))
     })
       .catch(error => {
@@ -100,8 +100,10 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
       }
       if (err) throw err
       client.transactionSubmit(action).then(res => {
-        console.log(JSON.stringify(res._attributes))
-        console.log(res.transactionID().toString('hex'))
+        let response = JSON.stringify(res._attributes)
+        console.log(`Response: ` + response)
+        console.log(`Status: ` + res._attributes.statusInfo.toString())
+        console.log('TxID: ' + res.transactionID().toString('hex'))
       })
         .catch(error => {
           if (error.response) {
