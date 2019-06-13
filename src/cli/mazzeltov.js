@@ -89,16 +89,12 @@ Examples:
 `
 clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callOptions),
   (val, options, client) => {
-    const action = {
-      channelID: options.channel_id || defaultChannel,
-      nonce: 0,
-      call: {
-        function: val,
-        parameters: callArgs
-      }
+    const call = {
+      function: val,
+      parameters: callArgs
     }
-    client.readonlySubmit(action).then(res => {
-      console.log(`Receipt: ` + JSON.stringify(res._attributes.receipt))
+    client.readonlySubmit(call).then(res => {
+      console.log(`Result: ` + JSON.stringify(res._attributes.result))
       console.log(`Status: ` + res._attributes.statusInfo.toString())
     })
       .catch(error => {

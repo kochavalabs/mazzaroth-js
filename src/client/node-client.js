@@ -1,14 +1,13 @@
 import Debug from 'debug'
 import axios from 'axios'
 import { sign, fromPrivate } from '../crypto/ecc-ed25519.js'
-import { TransactionFromObject, ActionFromObject, BlockLookupRequestFromAttribute, LargeToXDR } from '../xdr/convert.js'
+import { TransactionFromObject, ActionFromObject, CallFromObject, BlockLookupRequestFromAttribute, LargeToXDR } from '../xdr/convert.js'
 import types from 'mazzaroth-xdr'
 
 const debug = Debug('mazzeltov:node-client')
 
 const dPub = '0'.repeat(64)
 const dPriv = dPub
-const dSig = dPub + dPub
 
 class Client {
   constructor (host, privateKey, signFunc) {
@@ -56,18 +55,13 @@ class Client {
       })
   }
 
-  readonlySubmit (action) {
+  readonlySubmit (call) {
     debug('Sending readonly transaction')
-    debug('action: %o', action)
-    debug('address: %o', this.publicKey)
-    const txObj = {
-      signature: Buffer.from(dSig, 'hex'), // Default sig, not used for readonly transactions
-      address: this.publicKey,
-      action: action
-    }
-    const txXdr = TransactionFromObject(txObj)
+    debug('call: %o', call)
+
+    const callXdr = CallFromObject(call)
     const request = new types.TransactionReadonlyRequest()
-    request.transaction(txXdr)
+    request.call(callXdr)
 
     const body = LargeToXDR(request, types.TransactionReadonlyRequest).toString('base64')
 
