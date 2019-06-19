@@ -25,7 +25,7 @@ class Client {
     this.publicKey = publicKey
     this.transactionLookupRoute = '/transaction/lookup'
     this.transactionSubmitRoute = '/transaction/submit'
-    this.transactionReadonlyRoute = '/transaction/readonly'
+    this.ReadonlyRoute = '/readonly'
     this.blockLookupRoute = '/block/lookup'
     this.blockHeaderLookupRoute = '/block/header/lookup'
     this.receiptLookupRoute = '/receipt/lookup'
@@ -56,19 +56,19 @@ class Client {
   }
 
   readonlySubmit (call) {
-    debug('Sending readonly transaction')
+    debug('Sending readonly request')
     debug('call: %o', call)
 
     const callXdr = CallFromObject(call)
-    const request = new types.TransactionReadonlyRequest()
+    const request = new types.ReadonlyRequest()
     request.call(callXdr)
 
-    const body = LargeToXDR(request, types.TransactionReadonlyRequest).toString('base64')
+    const body = LargeToXDR(request, types.ReadonlyRequest).toString('base64')
 
     return axios
-      .post(this.host + this.transactionReadonlyRoute, body)
+      .post(this.host + this.ReadonlyRoute, body)
       .then(res => {
-        return types.TransactionReadonlyResponse.fromXDR(res.data, 'base64')
+        return types.ReadonlyResponse.fromXDR(res.data, 'base64')
       })
   }
 
