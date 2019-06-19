@@ -39,7 +39,7 @@
     "cursor": "^0.1.5",
     "debug": "^4.1.1",
     "elliptic": "^6.4.1",
-    "js-xdr": "^1.1.2",
+    "js-xdr": "git+ssh://git@github.com/kochavalabs/js-xdr.git",
     "mazzaroth-xdr": "git+ssh://git@github.com/kochavalabs/mazzaroth-xdr.git"
   }
 }

@@ -1,14 +1,14 @@
-import types from 'mazzaroth-xdr'
+import * as types from 'mazzaroth-xdr'
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import sinon from 'sinon'
-import { UnsignedHyper } from 'js-xdr'
 
 import ContractClient from '../../src/client/contract-client.js'
 import NodeClient from '../../src/client/node-client.js'
 
 const x256 = '3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c'
 const base64 = '9uZzPoEf1zsfABG7J6toIMio3VMY8eQnErkZTCURMu8/uwZNKkvmyBsjQBs/BWg'
+
 const testAbi = JSON.parse(`
 [
   {
@@ -77,44 +77,38 @@ const testAbi = JSON.parse(`
 ]
 `)
 
-function getReceipt () {
-  const ev1 = new types.Event()
-  ev1.key('asdf')
-  ev1.parameters([Buffer.from(base64, 'base64')])
-  const ev2 = new types.Event()
-  ev2.key('qwer')
-  ev2.parameters([Buffer.from(base64, 'base64')])
-
-  const receipt = new types.Receipt()
-  receipt.status(types.ReceiptStatus.SUCCESS())
-  receipt.stateRoot(Buffer.from(x256, 'hex'))
-  receipt.events([ev1, ev2])
-  receipt.result(Buffer.from('0000000568656c6c6f000000', 'hex'))
-  return receipt
-}
-
 function getMockClient () {
   const client = sinon.fake()
   client.nonceLookup = sinon.fake.returns(new Promise((resolve, reject) => {
-    const respXdr = new types.AccountNonceLookupResponse()
-    respXdr.nonce(new UnsignedHyper(3))
-    respXdr.status(types.NonceLookupStatus.FOUND())
-    respXdr.statusInfo('status was cool.')
+    const respXdr = types.AccountNonceLookupResponse()
+    respXdr.fromJSON({
+      nonce: '3',
+      status: 1,
+      statusInfo: 'status was cool.'
+    })
     resolve(respXdr)
   }))
   client.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
-    const respXdr = new types.TransactionSubmitResponse()
-    respXdr.transactionID(Buffer.from(x256, 'hex'))
-    respXdr.status(types.TransactionStatus.ACCEPTED())
-    respXdr.statusInfo('status was good.')
+    const respXdr = types.TransactionSubmitResponse()
+    respXdr.fromJSON({
+      transactionID: x256,
+      status: 1,
+      statusInfo: 'status was good.'
+    })
     resolve(respXdr)
   }))
   client.receiptLookup = sinon.fake.returns(new Promise((resolve, reject) => {
-    const respXdr = new types.ReceiptLookupResponse()
-    const receipt = getReceipt()
-    respXdr.receipt(receipt)
-    respXdr.status(types.ReceiptLookupStatus.FOUND())
-    respXdr.statusInfo('status was good.')
+    const respXdr = types.ReceiptLookupResponse()
+    respXdr.fromJSON({
+      receipt: {
+        status: 1,
+        stateRoot: x256,
+        events: [],
+        result: base64
+      },
+      status: 1,
+      statusInfo: 'status was good.'
+    })
     resolve(respXdr)
   }))
   return client
@@ -137,11 +131,10 @@ describe('contract client construction', () => {
 })
 
 describe('contract calls', () => {
-  it('error for too few arguments', (done) => {
+  it('error for too few arguments', () => {
     const client = new ContractClient(testAbi, {}, {})
-    client.sign_message().catch(err => {
+    return client.sign_message().catch(err => {
       expect(err).to.not.equal(null)
-      done()
     })
   })
 
@@ -160,9 +153,12 @@ describe('contract calls', () => {
   it('nonce fails bad status', () => {
     const nodeClient = getMockClient()
     nodeClient.nonceLookup = sinon.fake.returns(new Promise((resolve, reject) => {
-      const respXdr = new types.AccountNonceLookupResponse()
-      respXdr.nonce(new UnsignedHyper(3))
-      respXdr.status(types.NonceLookupStatus.NOT_FOUND())
+      const respXdr = types.AccountNonceLookupResponse()
+      respXdr.fromJSON({
+        nonce: '3',
+        status: 2,
+        statusInfo: 'asdf'
+      })
       resolve(respXdr)
     }))
     const client = new ContractClient(testAbi, {}, nodeClient)
@@ -186,10 +182,11 @@ describe('contract calls', () => {
   it('transaction submit status checked', () => {
     const nodeClient = getMockClient()
     nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
-      const respXdr = new types.TransactionSubmitResponse()
-      respXdr.transactionID(Buffer.from(x256, 'hex'))
-      respXdr.status(types.TransactionStatus.REJECTED())
-      respXdr.statusInfo('status was good.')
+      const respXdr = types.TransactionSubmitResponse({
+        transactionID: x256,
+        status: 2,
+        statusInfo: 'status was good.'
+      })
       resolve(respXdr)
     }))
     const client = new ContractClient(testAbi, {}, nodeClient)

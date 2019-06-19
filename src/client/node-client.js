@@ -1,13 +1,25 @@
 import Debug from 'debug'
 import axios from 'axios'
 import { sign, fromPrivate } from '../crypto/ecc-ed25519.js'
-import { TransactionFromObject, ActionFromObject, CallFromObject, BlockLookupRequestFromAttribute, LargeToXDR } from '../xdr/convert.js'
-import types from 'mazzaroth-xdr'
+import * as types from 'mazzaroth-xdr'
 
 const debug = Debug('mazzeltov:node-client')
 
 const dPub = '0'.repeat(64)
 const dPriv = dPub
+
+function attributeToIdentifier (attribute) {
+  if (attribute.length !== 64) {
+    return {
+      enum: 1,
+      value: attribute
+    }
+  }
+  return {
+    enum: 2,
+    value: attribute
+  }
+}
 
 class Client {
   constructor (host, privateKey, signFunc) {
@@ -37,94 +49,113 @@ class Client {
     debug('Sending transaction')
     debug('action: %o', action)
     debug('address: %o', this.publicKey)
-    const actionXdr = ActionFromObject(action)
-    const txObj = {
-      signature: this.sign(this.privateKey, LargeToXDR(actionXdr, types.Action)),
-      address: this.publicKey,
-      action: action
-    }
-    const txXdr = TransactionFromObject(txObj)
-    const request = new types.TransactionSubmitRequest()
-    request.transaction(txXdr)
-
-    const body = LargeToXDR(request, types.TransactionSubmitRequest).toString('base64')
+    const req = types.TransactionSubmitRequest()
+    const actionXdr = types.Action()
+    actionXdr.fromJSON(action)
+    req.fromJSON({
+      transaction: {
+        signature: this.sign(this.privateKey, actionXdr.toXDR()).toString('hex'),
+        address: this.publicKey.toString('hex'),
+        action: action
+      }
+    })
+    const body = req.toXDR('base64')
     return axios
       .post(this.host + this.transactionSubmitRoute, body)
       .then(res => {
-        return types.TransactionSubmitResponse.fromXDR(res.data, 'base64')
+        const result = types.TransactionSubmitResponse()
+        return result.fromXDR(res.data, 'base64')
       })
   }
 
   readonlySubmit (call) {
     debug('Sending readonly request')
     debug('call: %o', call)
-
-    const callXdr = CallFromObject(call)
-    const request = new types.ReadonlyRequest()
-    request.call(callXdr)
-
-    const body = LargeToXDR(request, types.ReadonlyRequest).toString('base64')
-
+    const req = types.ReadonlyRequest()
+    req.fromJSON({
+      call: call
+    })
+    const body = req.toXDR('base64')
     return axios
       .post(this.host + this.ReadonlyRoute, body)
       .then(res => {
-        return types.ReadonlyResponse.fromXDR(res.data, 'base64')
+        const result = types.ReadonlyResponse()
+        return result.fromXDR(res.data, 'base64')
       })
   }
 
   transactionLookup (txID) {
     debug('Looking up transaction with: %o', txID)
-    const requestXdr = new types.TransactionLookupRequest()
-    requestXdr.transactionID(Buffer.from(txID, 'hex'))
-    const body = requestXdr.toXDR('base64')
+    const req = types.TransactionLookupRequest()
+    req.fromJSON({
+      transactionID: txID
+    })
+    const body = types.TransactionLookupRequest().toXDR('base64')
     return axios
       .post(this.host + this.transactionLookupRoute, body)
       .then(res => {
-        return types.TransactionLookupResponse.fromXDR(res.data, 'base64')
+        const result = types.TransactionLookupResponse()
+        return result.fromXDR(res.data, 'base64')
       })
   }
 
   blockLookup (attribute) {
     debug('Looking up block with: %o', attribute)
-    const body = BlockLookupRequestFromAttribute(attribute).toXDR('base64')
+    const req = types.BlockLookupRequest()
+    req.fromJSON({
+      ID: attributeToIdentifier(attribute)
+    })
+    const body = req.toXDR('base64')
     return axios
       .post(this.host + this.blockLookupRoute, body)
       .then(res => {
-        return types.BlockLookupResponse.fromXDR(res.data, 'base64')
+        const result = types.BlockLookupResponse()
+        return result.fromXDR(res.data, 'base64')
       })
   }
 
   blockHeaderLookup (attribute) {
     debug('Looking up block header with: %o', attribute)
-    const body = BlockLookupRequestFromAttribute(attribute).toXDR('base64')
+    const req = types.BlockHeaderLookupRequest()
+    req.fromJSON({
+      ID: attributeToIdentifier(attribute)
+    })
+    const body = req.toXDR('base64')
     return axios
       .post(this.host + this.blockHeaderLookupRoute, body)
       .then(res => {
-        return types.BlockHeaderLookupResponse.fromXDR(res.data, 'base64')
+        const result = types.BlockHeaderLookupResponse()
+        return result.fromXDR(res.data, 'base64')
       })
   }
 
   receiptLookup (txID) {
     debug('Looking up receipt for txID: %o', txID)
-    const requestXdr = new types.ReceiptLookupRequest()
-    requestXdr.transactionID(Buffer.from(txID, 'hex'))
+    const requestXdr = types.ReceiptLookupRequest()
+    requestXdr.fromJSON({
+      transactionID: txID
+    })
     const body = requestXdr.toXDR('base64')
     return axios
       .post(this.host + this.receiptLookupRoute, body)
       .then(res => {
-        return types.ReceiptLookupResponse.fromXDR(res.data, 'base64')
+        const result = types.ReceiptLookupResponse()
+        return result.fromXDR(res.data, 'base64')
       })
   }
 
   nonceLookup () {
     debug('Looking up nonce for account: %o', this.publicKey.toString('hex'))
-    const nonceLookupRequest = new types.AccountNonceLookupRequest()
-    nonceLookupRequest.account(this.publicKey)
+    const nonceLookupRequest = types.AccountNonceLookupRequest()
+    nonceLookupRequest.fromJSON({
+      account: this.publicKey.toString('hex')
+    })
     const body = nonceLookupRequest.toXDR('base64')
     return axios
       .post(this.host + this.nonceLookupRoute, body)
       .then(res => {
-        return types.AccountNonceLookupResponse.fromXDR(res.data, 'base64')
+        const result = types.AccountNonceLookupResponse()
+        return result.fromXDR(res.data, 'base64')
       })
   }
 }

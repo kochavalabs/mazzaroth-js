@@ -1,17 +1,18 @@
-import types from 'mazzaroth-xdr'
 import Debug from 'debug'
-import { XdrToJson } from '../xdr/convert.js'
 
 const debug = Debug('mazzeltov:contract-client')
 
 function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrConfig, lookupRetries, lookupTimeout) {
   nodeClient.receiptLookup(txID).then(res => {
+    res = res.toJSON()
     if (lookupRetries === 0) {
       return reject(new Error('Request timeout.'))
     }
-    if (res.status() === types.ReceiptLookupStatus.FOUND()) {
-      if (res.receipt().status() === types.ReceiptStatus.SUCCESS()) {
-        return resolve(XdrToJson(res.receipt().result(), resultFormat, xdrConfig))
+    if (res.status === 1) {
+      if (res.receipt.status === 1) {
+        const result = xdrConfig[resultFormat]()
+        result.fromXDR(res.reseipt.result)
+        return resolve(result.toJSON())
       } else {
         return reject(new Error('Receipt status is FAILURE'))
       }
@@ -41,24 +42,26 @@ class Client {
               return reject(new Error('Incorrect number of arguments.'))
             }
             nodeClient.nonceLookup().then(result => {
+              result = result.toJSON()
               debug('Nonce lookup returned with: %o', result)
-              if (result.status() !== types.NonceLookupStatus.FOUND()) {
+              if (result.status !== 1) {
                 return reject(new Error('Nonce lookup failed.'))
               }
               const action = {
                 channelID: '0'.repeat(64),
-                nonce: result.nonce(),
+                nonce: result.nonce,
                 call: {
                   function: abiEntry.name,
                   parameters: [[]]
                 }
               }
               nodeClient.transactionSubmit(action).then(result => {
+                result = result.toJSON()
                 debug('Transaction submit returned with: %o', result)
-                if (result.status() !== types.TransactionStatus.ACCEPTED()) {
+                if (result.status !== 1) {
                   return reject(new Error('Transaction submission not accepted.'))
                 }
-                const txID = result.transactionID()
+                const txID = result.transactionID
                 pollResult(txID, resolve, reject, nodeClient, abiEntry.outputs[0], xdrConfig, lookupRetries, lookupTimeout)
               }).catch(err => reject(err))
             }).catch(err => reject(err))

@@ -60,16 +60,17 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
   (val, options, client) => {
     const action = {
       channelID: options.channel_id || defaultChannel,
-      nonce: options.nonce || Math.floor(Math.random() * Math.floor(1000000000)),
-      call: {
-        function: val,
-        parameters: callArgs
+      nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
+      category: {
+        enum: 1,
+        value: {
+          function: val,
+          parameters: callArgs
+        }
       }
     }
     client.transactionSubmit(action).then(res => {
-      console.log(JSON.stringify(res._attributes))
-      console.log(`Status: ` + res._attributes.statusInfo.toString())
-      console.log('TxID: ' + res.transactionID().toString('hex'))
+      console.log(res.toJSON())
     })
       .catch(error => {
         if (error.response) {
@@ -94,8 +95,7 @@ clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callO
       parameters: callArgs
     }
     client.readonlySubmit(call).then(res => {
-      console.log(`Result: ` + JSON.stringify(res._attributes.result))
-      console.log(`Status: ` + res._attributes.statusInfo.toString())
+      console.log(res.toJSON())
     })
       .catch(error => {
         if (error.response) {
@@ -119,17 +119,17 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
     fs.readFile(val, (err, data) => {
       const action = {
         channelID: options.channel_id || defaultChannel,
-        nonce: options.nonce || Math.floor(Math.random() * Math.floor(1000000000)),
-        update: {
-          contract: data
+        nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
+        category: {
+          enum: 2,
+          value: {
+            contract: data.toString('base64')
+          }
         }
       }
       if (err) throw err
       client.transactionSubmit(action).then(res => {
-        let response = JSON.stringify(res._attributes)
-        console.log(`Response: ` + response)
-        console.log(`Status: ` + res._attributes.statusInfo.toString())
-        console.log('TxID: ' + res.transactionID().toString('hex'))
+        console.log(res.toJSON())
       })
         .catch(error => {
           if (error.response) {
@@ -151,7 +151,7 @@ Examples:
 clientCommand('transaction-lookup', transactionLookupDesc, [],
   (val, options, client) => {
     client.transactionLookup(val).then(res => {
-      console.log(JSON.stringify(res._attributes))
+      console.log(res.toJSON())
     })
       .catch(error => {
         if (error.response) {
@@ -176,7 +176,7 @@ Examples:
         val = possibleInt
       }
       client[lookupFunc](val).then(res => {
-        console.log(JSON.stringify(res._attributes))
+        console.log(res.toJSON())
       })
         .catch(error => {
           if (error.response) {
@@ -199,7 +199,7 @@ Examples:
 clientCommand('receipt-lookup', receiptLookupDesc, [],
   (val, options, client) => {
     client.receiptLookup(val).then(res => {
-      console.log(JSON.stringify(res._attributes))
+      console.log(res.toJSON())
     })
       .catch(error => {
         if (error.response) {
@@ -220,8 +220,7 @@ clientCommand('nonce-lookup', nonceLookupDesc, [],
   (val, options, client) => {
     client.publicKey = Buffer.from(val, 'hex')
     client.nonceLookup().then(res => {
-      console.log(JSON.stringify(res._attributes))
-      console.log('Nonce: ' + res.nonce())
+      console.log(res.toJSON())
     })
       .catch(error => {
         if (error.response) {
