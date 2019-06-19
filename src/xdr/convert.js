@@ -68,6 +68,18 @@ function ActionFromObject (toConvert) {
   return action
 }
 
+function CallFromObject (toConvert) {
+  const call = new types.Call()
+  call.function(toConvert.function)
+  const parameters = []
+  toConvert.parameters.forEach((param) => {
+    parameters.push(Buffer.from(param, 'base64'))
+  })
+  call.parameters(parameters)
+
+  return call
+}
+
 // Creates a block/blockHeader lookup request based on the truth value
 // of the header argument. Determins if attribute is a number of ID by checking
 // its type.
@@ -98,4 +110,4 @@ function LargeToXDR (xdrObject, type) {
   return cursor.slice(bytesWritten).buffer()
 }
 
-export { TransactionFromObject, ActionFromObject, BlockLookupRequestFromAttribute, LargeToXDR }
+export { TransactionFromObject, ActionFromObject, CallFromObject, BlockLookupRequestFromAttribute, LargeToXDR }

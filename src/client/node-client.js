@@ -1,7 +1,7 @@
 import Debug from 'debug'
 import axios from 'axios'
 import { sign, fromPrivate } from '../crypto/ecc-ed25519.js'
-import { TransactionFromObject, ActionFromObject, BlockLookupRequestFromAttribute, LargeToXDR } from '../xdr/convert.js'
+import { TransactionFromObject, ActionFromObject, CallFromObject, BlockLookupRequestFromAttribute, LargeToXDR } from '../xdr/convert.js'
 import types from 'mazzaroth-xdr'
 
 const debug = Debug('mazzeltov:node-client')
@@ -25,6 +25,7 @@ class Client {
     this.publicKey = publicKey
     this.transactionLookupRoute = '/transaction/lookup'
     this.transactionSubmitRoute = '/transaction/submit'
+    this.ReadonlyRoute = '/readonly'
     this.blockLookupRoute = '/block/lookup'
     this.blockHeaderLookupRoute = '/block/header/lookup'
     this.receiptLookupRoute = '/receipt/lookup'
@@ -51,6 +52,23 @@ class Client {
       .post(this.host + this.transactionSubmitRoute, body)
       .then(res => {
         return types.TransactionSubmitResponse.fromXDR(res.data, 'base64')
+      })
+  }
+
+  readonlySubmit (call) {
+    debug('Sending readonly request')
+    debug('call: %o', call)
+
+    const callXdr = CallFromObject(call)
+    const request = new types.ReadonlyRequest()
+    request.call(callXdr)
+
+    const body = LargeToXDR(request, types.ReadonlyRequest).toString('base64')
+
+    return axios
+      .post(this.host + this.ReadonlyRoute, body)
+      .then(res => {
+        return types.ReadonlyResponse.fromXDR(res.data, 'base64')
       })
   }
 

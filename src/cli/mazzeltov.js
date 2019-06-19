@@ -68,8 +68,34 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
     }
     client.transactionSubmit(action).then(res => {
       console.log(JSON.stringify(res._attributes))
-      console.log()
+      console.log(`Status: ` + res._attributes.statusInfo.toString())
       console.log('TxID: ' + res.transactionID().toString('hex'))
+    })
+      .catch(error => {
+        if (error.response) {
+          console.log(error.response.data)
+        } else {
+          console.log(error)
+        }
+      })
+  })
+
+const readonlyCallDesc = `
+Submits a readonly call transaction to a mazzaroth node. 
+(https://github.com/kochavalabs/mazzaroth-xdr)
+
+Examples:
+  mazzeltov readonly-call my_func -a 9uZz -a f1zsfABG7J
+`
+clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callOptions),
+  (val, options, client) => {
+    const call = {
+      function: val,
+      parameters: callArgs
+    }
+    client.readonlySubmit(call).then(res => {
+      console.log(`Result: ` + JSON.stringify(res._attributes.result))
+      console.log(`Status: ` + res._attributes.statusInfo.toString())
     })
       .catch(error => {
         if (error.response) {
@@ -100,8 +126,10 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
       }
       if (err) throw err
       client.transactionSubmit(action).then(res => {
-        console.log(JSON.stringify(res._attributes))
-        console.log(res.transactionID().toString('hex'))
+        let response = JSON.stringify(res._attributes)
+        console.log(`Response: ` + response)
+        console.log(`Status: ` + res._attributes.statusInfo.toString())
+        console.log('TxID: ' + res.transactionID().toString('hex'))
       })
         .catch(error => {
           if (error.response) {
