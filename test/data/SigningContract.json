@@ -1,0 +1,65 @@
+[
+  {
+    "type": "function",
+    "name": "generate_key_pair",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "returnValue0",
+        "type": "string",
+        "codec": "bytes"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "sign_message",
+    "inputs": [
+      {
+        "name": "priv_key",
+        "type": "string",
+        "codec": "bytes"
+      },
+      {
+        "name": "message",
+        "type": "string",
+        "codec": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "returnValue0",
+        "type": "string",
+        "codec": "bytes"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "validate_signature",
+    "inputs": [
+      {
+        "name": "pub_key",
+        "type": "string",
+        "codec": "bytes"
+      },
+      {
+        "name": "message",
+        "type": "string",
+        "codec": "bytes"
+      },
+      {
+        "name": "signature",
+        "type": "string",
+        "codec": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "returnValue0",
+        "type": "string",
+        "codec": "bytes"
+      }
+    ]
+  }
+]
