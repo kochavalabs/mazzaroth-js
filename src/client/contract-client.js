@@ -1,8 +1,48 @@
+import types from 'js-xdr'
 import Debug from 'debug'
 
 const debug = Debug('mazzeltov:contract-client')
 
-function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrConfig, lookupRetries, lookupTimeout) {
+function getBaseType (typeStr) {
+  const baseType = typeStr.replace('[]', '')
+  let XdrType
+  switch (baseType) {
+    case 'bool':
+      XdrType = types.Bool
+      break
+    case 'int32':
+      XdrType = types.Int
+      break
+    case 'uint32':
+      XdrType = types.UInt
+      break
+    case 'int64':
+      XdrType = types.Hyper
+      break
+    case 'uint64':
+      XdrType = types.UHyper
+      break
+    case 'f32':
+      XdrType = types.Float
+      break
+    case 'f64':
+      XdrType = types.Double
+      break
+    case 'string':
+      XdrType = types.Str
+      break
+    case 'u8':
+      return new types.VarOpaque()
+    default:
+      return undefined
+  }
+  if (baseType + '[]' === typeStr) {
+    return new types.VarArray(Math.pow(2, 32) - 1, () => { return new XdrType() })
+  }
+  return new XdrType()
+}
+
+function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrTypes, lookupRetries, lookupTimeout) {
   nodeClient.receiptLookup(txID).then(res => {
     res = res.toJSON()
     if (lookupRetries === 0) {
@@ -10,9 +50,15 @@ function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrConfig,
     }
     if (res.status === 1) {
       if (res.receipt.status === 1) {
-        const result = xdrConfig[resultFormat]()
-        result.fromXDR(res.reseipt.result)
-        return resolve(result.toJSON())
+        let r = getBaseType(resultFormat)
+        if (xdrTypes[resultFormat] !== undefined) {
+          r = xdrTypes[resultFormat]()
+        }
+        if (r === undefined) {
+          return reject(Error('Type not identified: ' + resultFormat))
+        }
+        r.fromXDR(res.receipt.result)
+        return resolve(r.toJSON())
       } else {
         return reject(new Error('Receipt status is FAILURE'))
       }
@@ -24,9 +70,9 @@ function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrConfig,
 }
 
 class Client {
-  constructor (abiJson, xdrConfig, nodeClient, lookupRetries, lookupTimeout) {
+  constructor (abiJson, xdrTypes, nodeClient, lookupRetries, lookupTimeout) {
     debug('ABI Json: %o', abiJson)
-    debug('XDR Config: %o', xdrConfig)
+    debug('XDR Config: %o', xdrTypes)
     debug('Retries %o', lookupRetries)
     debug('Timeout %o', lookupTimeout)
     lookupRetries = lookupRetries || 5
@@ -47,12 +93,28 @@ class Client {
               if (result.status !== 1) {
                 return reject(new Error('Nonce lookup failed.'))
               }
+              const params = []
+              for (let i = 0; i < args.length; i++) {
+                const type = abiEntry.inputs[i].type
+                let p = getBaseType(type)
+                if (xdrTypes[type] !== undefined) {
+                  p = xdrTypes[type]()
+                }
+                if (p === undefined) {
+                  return reject(Error('Type not identified: ' + type))
+                }
+                p.fromJSON(args[i])
+                params.push(p.toXDR('base64'))
+              }
               const action = {
                 channelID: '0'.repeat(64),
                 nonce: result.nonce,
-                call: {
-                  function: abiEntry.name,
-                  parameters: [[]]
+                category: {
+                  enum: 1,
+                  value: {
+                    function: abiEntry.name,
+                    parameters: [params]
+                  }
                 }
               }
               nodeClient.transactionSubmit(action).then(result => {
@@ -62,7 +124,7 @@ class Client {
                   return reject(new Error('Transaction submission not accepted.'))
                 }
                 const txID = result.transactionID
-                pollResult(txID, resolve, reject, nodeClient, abiEntry.outputs[0], xdrConfig, lookupRetries, lookupTimeout)
+                pollResult(txID, resolve, reject, nodeClient, abiEntry.outputs[0].type, xdrTypes, lookupRetries, lookupTimeout)
               }).catch(err => reject(err))
             }).catch(err => reject(err))
           })
