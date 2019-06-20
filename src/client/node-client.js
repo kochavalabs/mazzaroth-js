@@ -27,13 +27,13 @@ class Client {
     debug('private key: %o', privateKey)
     debug('sign: %o', sign)
 
+    this.privateKey = Buffer.from(privateKey || dPriv, 'hex')
     // Get Public key
-    const publicKey = fromPrivate(privateKey)
+    const publicKey = fromPrivate(this.privateKey)
 
     debug('public key: %o', publicKey.toString('hex'))
     this.host = host || 'http://localhost:8081'
     this.host = this.host.replace(/\/+$/, '')
-    this.privateKey = Buffer.from(privateKey || dPriv, 'hex')
     this.publicKey = publicKey
     this.transactionLookupRoute = '/transaction/lookup'
     this.transactionSubmitRoute = '/transaction/submit'
