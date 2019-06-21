@@ -23,7 +23,12 @@ class ContractIO {
       try {
         const res = new nearley.Parser(nearley.Grammar.fromCompiled(grammar)).feed(line)
         if (res.results.length) {
-          this.contractClient[res.results[0].name](...res.results[0].args).then(res => {
+          const functionName = res.results[0].name
+          const args = res.results[0].args
+          if (!this.contractClient[functionName]) {
+            throw new Error(`${functionName} is not a contract function`)
+          }
+          this.contractClient[functionName](...args).then(res => {
             console.log(res)
             this.rl.prompt()
           }).catch(e => {
@@ -39,7 +44,8 @@ class ContractIO {
         this.rl.prompt()
       }
     }).on('close', () => {
-      console.log('peace bro')
+      console.log('')
+      console.log('peace bro~')
       process.exit(0)
     })
   }
