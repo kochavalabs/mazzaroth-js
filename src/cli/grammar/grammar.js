@@ -11,6 +11,8 @@ var grammar = {
     {"name": "_", "symbols": []},
     {"name": "_", "symbols": ["_", /[\s]/], "postprocess": function() {}},
     {"name": "statement", "symbols": ["contractFunc"], "postprocess": id},
+    {"name": "statement$string$1", "symbols": [{"literal":"a"}, {"literal":"b"}, {"literal":"i"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "statement", "symbols": ["statement$string$1"], "postprocess": id},
     {"name": "identifier$ebnf$1", "symbols": []},
     {"name": "identifier$ebnf$1", "symbols": ["identifier$ebnf$1", /[a-z | A-Z | 0-9 | _]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "identifier", "symbols": [/[a-z | A-Z]/, "identifier$ebnf$1"], "postprocess": function(d) { return d[0] + d[1].join(""); }},

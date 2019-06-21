@@ -16,6 +16,37 @@ class ContractIO {
     this.contractClient = contractClient
   }
 
+  abi () {
+    const functions = this.contractClient.abiJson.filter(x => x.type === 'function')
+    console.log()
+    console.log('Functions: ')
+    functions.forEach(x => {
+      let output = `  ${x.name}(`
+      const types = x.inputs.map(x => x.type)
+      output += types.join(', ')
+      output += ')'
+      if (x.outputs) {
+        output += ` -> ${x.outputs[0].type}`
+      }
+      console.log(output)
+    })
+    console.log()
+    this.rl.prompt()
+  }
+
+  executeContractFunction (functionName, args) {
+    if (!this.contractClient[functionName]) {
+      throw new Error(`${functionName} is not a contract function`)
+    }
+    this.contractClient[functionName](...args).then(res => {
+      console.log(res)
+      this.rl.prompt()
+    }).catch(e => {
+      console.log(e)
+      this.rl.prompt()
+    })
+  }
+
   run () {
     this.rl.prompt()
 
@@ -23,18 +54,11 @@ class ContractIO {
       try {
         const res = new nearley.Parser(nearley.Grammar.fromCompiled(grammar)).feed(line)
         if (res.results.length) {
-          const functionName = res.results[0].name
-          const args = res.results[0].args
-          if (!this.contractClient[functionName]) {
-            throw new Error(`${functionName} is not a contract function`)
+          if (this[res.results[0]]) {
+            this[res.results[0]]()
+          } else {
+            this.executeContractFunction(res.results[0].name, res.results[0].args)
           }
-          this.contractClient[functionName](...args).then(res => {
-            console.log(res)
-            this.rl.prompt()
-          }).catch(e => {
-            console.log(e)
-            this.rl.prompt()
-          })
         } else {
           console.log(`Incomplete statement: "${line}"`)
           this.rl.prompt()

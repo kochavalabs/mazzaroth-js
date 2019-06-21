@@ -13,6 +13,7 @@ class Client {
     lookupTimeout = lookupTimeout || 500
     channelID = channelID || '0'.repeat(64)
     xdrTypes = xdrTypes || {}
+    this.abiJson = abiJson
 
     abiJson.forEach((abiEntry) => {
       if (abiEntry.type === 'function') {

@@ -6,6 +6,7 @@ RB -> ")"
 _ -> null | _ [\s] {% function() {} %}
 
 statement -> contractFunc {% id %}
+           | "abi" {% id %}
 
 identifier -> [a-z | A-Z] [a-z | A-Z | 0-9 | _]:* {% function(d) { return d[0] + d[1].join(""); }  %}
             | "_" [ a-z | A-Z | 0-9 | _]:+ {% function(d) { return d[0] + d[1].join(""); }  %}
