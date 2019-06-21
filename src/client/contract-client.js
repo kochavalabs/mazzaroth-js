@@ -98,7 +98,7 @@ function getBaseType (typeStr) {
     case 'string':
       XdrType = types.Str
       break
-    case 'u8':
+    case 'bytes':
       return new types.VarOpaque()
     default:
       return undefined
