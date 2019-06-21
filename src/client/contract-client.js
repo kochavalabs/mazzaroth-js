@@ -3,6 +3,73 @@ import Debug from 'debug'
 
 const debug = Debug('mazzeltov:contract-client')
 
+class Client {
+  constructor (abiJson, xdrTypes, nodeClient, channelID, lookupRetries, lookupTimeout) {
+    debug('ABI Json: %o', abiJson)
+    debug('XDR Config: %o', xdrTypes)
+    debug('Retries %o', lookupRetries)
+    debug('Timeout %o', lookupTimeout)
+    lookupRetries = lookupRetries || 5
+    lookupTimeout = lookupTimeout || 500
+    channelID = channelID || '0'.repeat(64)
+    xdrTypes = xdrTypes || {}
+
+    abiJson.forEach((abiEntry) => {
+      if (abiEntry.type === 'function') {
+        this[abiEntry.name] = function (...args) {
+          return new Promise((resolve, reject) => {
+            debug('Calling contract fucntion: %o', abiEntry.name)
+            debug('Call arguments: %o', args)
+            if (args.length !== abiEntry.inputs.length) {
+              return reject(new Error('Incorrect number of arguments.'))
+            }
+            nodeClient.nonceLookup().then(result => {
+              result = result.toJSON()
+              debug('Nonce lookup returned with: %o', result)
+              if (result.status !== 1) {
+                return reject(new Error('Nonce lookup failed.'))
+              }
+              const params = []
+              for (let i = 0; i < args.length; i++) {
+                const type = abiEntry.inputs[i].type
+                let p = getBaseType(type)
+                if (xdrTypes[type] !== undefined) {
+                  p = xdrTypes[type]()
+                }
+                if (p === undefined) {
+                  return reject(Error('Type not identified: ' + type))
+                }
+                p.fromJSON(args[i])
+                params.push(p.toXDR('base64'))
+              }
+              const action = {
+                channelID: channelID,
+                nonce: result.nonce,
+                category: {
+                  enum: 1,
+                  value: {
+                    function: abiEntry.name,
+                    parameters: params
+                  }
+                }
+              }
+              nodeClient.transactionSubmit(action).then(result => {
+                result = result.toJSON()
+                debug('Transaction submit returned with: %o', result)
+                if (result.status !== 1) {
+                  return reject(new Error('Transaction submission not accepted.'))
+                }
+                const txID = result.transactionID
+                pollResult(txID, resolve, reject, nodeClient, abiEntry.outputs[0].type, xdrTypes, lookupRetries, lookupTimeout)
+              }).catch(err => reject(err))
+            }).catch(err => reject(err))
+          })
+        }
+      }
+    })
+  }
+}
+
 function getBaseType (typeStr) {
   const baseType = typeStr.replace('[]', '')
   let XdrType
@@ -45,6 +112,7 @@ function getBaseType (typeStr) {
 function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrTypes, lookupRetries, lookupTimeout) {
   nodeClient.receiptLookup(txID).then(res => {
     res = res.toJSON()
+    debug('Receipt lookup result: %o', res)
     if (lookupRetries === 0) {
       return reject(new Error('Request timeout.'))
     }
@@ -64,74 +132,9 @@ function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrTypes, 
       }
     }
     setTimeout(() => {
-      pollResult(txID, resolve, reject, nodeClient, lookupRetries - 1, lookupTimeout)
+      pollResult(txID, resolve, reject, nodeClient, resultFormat, xdrTypes, lookupRetries - 1, lookupTimeout)
     }, lookupTimeout)
   }).catch(err => reject(err))
-}
-
-class Client {
-  constructor (abiJson, xdrTypes, nodeClient, lookupRetries, lookupTimeout) {
-    debug('ABI Json: %o', abiJson)
-    debug('XDR Config: %o', xdrTypes)
-    debug('Retries %o', lookupRetries)
-    debug('Timeout %o', lookupTimeout)
-    lookupRetries = lookupRetries || 5
-    lookupTimeout = lookupTimeout || 500
-
-    abiJson.forEach((abiEntry) => {
-      if (abiEntry.type === 'function') {
-        this[abiEntry.name] = function (...args) {
-          return new Promise((resolve, reject) => {
-            debug('Calling contract fucntion: %o', abiEntry.name)
-            debug('Call arguments: %o', args)
-            if (args.length !== abiEntry.inputs.length) {
-              return reject(new Error('Incorrect number of arguments.'))
-            }
-            nodeClient.nonceLookup().then(result => {
-              result = result.toJSON()
-              debug('Nonce lookup returned with: %o', result)
-              if (result.status !== 1) {
-                return reject(new Error('Nonce lookup failed.'))
-              }
-              const params = []
-              for (let i = 0; i < args.length; i++) {
-                const type = abiEntry.inputs[i].type
-                let p = getBaseType(type)
-                if (xdrTypes[type] !== undefined) {
-                  p = xdrTypes[type]()
-                }
-                if (p === undefined) {
-                  return reject(Error('Type not identified: ' + type))
-                }
-                p.fromJSON(args[i])
-                params.push(p.toXDR('base64'))
-              }
-              const action = {
-                channelID: '0'.repeat(64),
-                nonce: result.nonce,
-                category: {
-                  enum: 1,
-                  value: {
-                    function: abiEntry.name,
-                    parameters: [params]
-                  }
-                }
-              }
-              nodeClient.transactionSubmit(action).then(result => {
-                result = result.toJSON()
-                debug('Transaction submit returned with: %o', result)
-                if (result.status !== 1) {
-                  return reject(new Error('Transaction submission not accepted.'))
-                }
-                const txID = result.transactionID
-                pollResult(txID, resolve, reject, nodeClient, abiEntry.outputs[0].type, xdrTypes, lookupRetries, lookupTimeout)
-              }).catch(err => reject(err))
-            }).catch(err => reject(err))
-          })
-        }
-      }
-    })
-  }
 }
 
 export default Client

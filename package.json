@@ -4,7 +4,8 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "npm run lint && babel src -d dist",
+    "build-grammar": "./node_modules/nearley/bin/nearleyc.js ./src/cli/grammar/grammar.ne -o ./src/cli/grammar/grammar.js",
+    "build": "npm run build-grammar && npm run lint && babel src -d dist",
     "test": "npm run lint && ./node_modules/.bin/mocha --require babel-register \"test/**/*.js\"",
     "cli": "npm run build && env DEBUG='mazzeltov*' node ./dist/cli/mazzeltov.js",
     "lint": "./node_modules/.bin/eslint ."
@@ -40,6 +41,7 @@
     "debug": "^4.1.1",
     "elliptic": "^6.4.1",
     "js-xdr": "git+ssh://git@github.com/kochavalabs/js-xdr.git",
-    "mazzaroth-xdr": "git+ssh://git@github.com/kochavalabs/mazzaroth-xdr.git"
+    "mazzaroth-xdr": "git+ssh://git@github.com/kochavalabs/mazzaroth-xdr.git",
+    "nearley": "^2.16.0"
   }
 }

@@ -48,7 +48,7 @@ class Client {
   transactionSubmit (action) {
     debug('Sending transaction')
     debug('action: %o', action)
-    debug('address: %o', this.publicKey)
+    debug('address: %o', this.publicKey.toString('hex'))
     const req = types.TransactionSubmitRequest()
     const actionXdr = types.Action()
     actionXdr.fromJSON(action)

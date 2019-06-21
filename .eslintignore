@@ -1,2 +1,2 @@
 dist/*
-src/proto/*
+src/cli/grammar/grammar.js

@@ -216,7 +216,7 @@ describe('contract calls', () => {
           enum: 1,
           value: {
             function: 'sign_message',
-            parameters: [[ 'AAAAA29uZQA=', 'AAAAA3R3bwA=' ]]
+            parameters: [ 'AAAAA29uZQA=', 'AAAAA3R3bwA=' ]
           }
         }
       })).to.equal(true)

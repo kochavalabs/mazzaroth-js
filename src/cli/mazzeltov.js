@@ -1,4 +1,6 @@
 import Client from '../client/node-client.js'
+import ContractClient from '../client/contract-client.js'
+import ContractIO from './contract-io.js'
 import program from 'commander'
 import fs from 'fs'
 
@@ -35,7 +37,6 @@ const transactionOptions = [
     '-n --nonce <s>',
     'Nonce to sent the request with.'
   ]
-
 ]
 
 const callArgs = []
@@ -229,6 +230,37 @@ clientCommand('nonce-lookup', nonceLookupDesc, [],
           console.log(error)
         }
       })
+  })
+
+const cliOptions = [
+  [
+    '-x -xdr_types <s>',
+    'Custom struct types javascript file (made with xdrgen)'
+  ],
+  [
+    '-c --channel_id <s>',
+    'Base64 channel ID to send transaction to.'
+  ]
+]
+
+const contractCliDesc = `
+Drops into a contract cli where you can call contract functions interactively.
+
+Examples:
+  mazzeltov contract-cli abi.json
+`
+clientCommand('contract-cli', contractCliDesc, cliOptions,
+  (val, options, client) => {
+    fs.readFile(val, (err, data) => {
+      if (err) {
+        console.log('could not read file: ' + val)
+        return
+      }
+      const abiJSON = JSON.parse(data.toString('ascii'))
+      const contractClient = new ContractClient(abiJSON, null, client, options.channel_id)
+      const io = new ContractIO(contractClient)
+      io.run()
+    })
   })
 
 program.on('command:*', function (command) {
