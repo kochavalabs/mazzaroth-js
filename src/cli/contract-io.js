@@ -25,7 +25,7 @@ class ContractIO {
       const types = x.inputs.map(x => x.type)
       output += types.join(', ')
       output += ')'
-      if (x.outputs) {
+      if (x.outputs[0]) {
         output += ` -> ${x.outputs[0].type}`
       }
       console.log(output)

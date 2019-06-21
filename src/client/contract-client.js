@@ -33,7 +33,7 @@ class Client {
               const params = []
               for (let i = 0; i < args.length; i++) {
                 const type = abiEntry.inputs[i].type
-                let p = getBaseType(type)
+                let p = getBaseType(abiEntry.inputs[i])
                 if (xdrTypes[type] !== undefined) {
                   p = xdrTypes[type]()
                 }
@@ -61,7 +61,7 @@ class Client {
                   return reject(new Error('Transaction submission not accepted.'))
                 }
                 const txID = result.transactionID
-                pollResult(txID, resolve, reject, nodeClient, abiEntry.outputs[0].type, xdrTypes, lookupRetries, lookupTimeout)
+                pollResult(txID, resolve, reject, nodeClient, abiEntry.outputs[0], xdrTypes, lookupRetries, lookupTimeout)
               }).catch(err => reject(err))
             }).catch(err => reject(err))
           })
@@ -71,7 +71,11 @@ class Client {
   }
 }
 
-function getBaseType (typeStr) {
+function getBaseType (output) {
+  if (!output) {
+    return new types.Void()
+  }
+  const typeStr = output.type
   const baseType = typeStr.replace('[]', '')
   let XdrType
   switch (baseType) {
