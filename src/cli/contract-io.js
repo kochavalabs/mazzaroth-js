@@ -5,6 +5,17 @@ import Debug from 'debug'
 
 const debug = Debug('mazzeltov:contract-io')
 
+function outputAbiFunc (abiEntry) {
+  let output = `  ${abiEntry.name}(`
+  const types = abiEntry.inputs.map(x => x.type)
+  output += types.join(', ')
+  output += ')'
+  if (abiEntry.outputs[0]) {
+    output += ` -> ${abiEntry.outputs[0].type}`
+  }
+  console.log(output)
+}
+
 class ContractIO {
   constructor (contractClient) {
     debug('constructed contract IO with contractClient: %o', contractClient)
@@ -18,18 +29,13 @@ class ContractIO {
 
   abi () {
     const functions = this.contractClient.abiJson.filter(x => x.type === 'function')
+    const readonlys = this.contractClient.abiJson.filter(x => x.type === 'readonly')
     console.log()
     console.log('Functions: ')
-    functions.forEach(x => {
-      let output = `  ${x.name}(`
-      const types = x.inputs.map(x => x.type)
-      output += types.join(', ')
-      output += ')'
-      if (x.outputs[0]) {
-        output += ` -> ${x.outputs[0].type}`
-      }
-      console.log(output)
-    })
+    functions.forEach(outputAbiFunc)
+    console.log()
+    console.log('ReadOnly Functions: ')
+    readonlys.forEach(outputAbiFunc)
     console.log()
     this.rl.prompt()
   }
