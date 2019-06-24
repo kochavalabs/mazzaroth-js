@@ -119,7 +119,7 @@ describe('contract client construction', () => {
   it('basic construction.', () => {
     const xdrConfig = { qwer: 'ty' }
     const nodeClient = new NodeClient()
-    const client = new ContractClient(testAbi, xdrConfig, nodeClient)
+    const client = new ContractClient(testAbi, nodeClient, xdrConfig)
     expect(!client).to.equal(false)
   })
 
@@ -145,7 +145,7 @@ describe('contract calls', () => {
     nodeClient.nonceLookup = sinon.fake.returns(new Promise((resolve, reject) => {
       reject(retErr)
     }))
-    const client = new ContractClient(testAbi, {}, nodeClient)
+    const client = new ContractClient(testAbi, nodeClient, {})
     return client.sign_message('one', 'two').catch(err => {
       expect(err).to.equal(retErr)
     })
@@ -162,7 +162,7 @@ describe('contract calls', () => {
       })
       resolve(respXdr)
     }))
-    const client = new ContractClient(testAbi, {}, nodeClient)
+    const client = new ContractClient(testAbi, nodeClient, {})
     return client.sign_message('one', 'two').catch(err => {
       expect(err.toString()).to.equal('Error: Nonce lookup failed.')
     })
@@ -174,7 +174,7 @@ describe('contract calls', () => {
     nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
       reject(retErr)
     }))
-    const client = new ContractClient(testAbi, {}, nodeClient)
+    const client = new ContractClient(testAbi, nodeClient, {})
     return client.sign_message('one', 'two').catch(err => {
       expect(err).to.equal(retErr)
     })
@@ -190,7 +190,7 @@ describe('contract calls', () => {
       })
       resolve(respXdr)
     }))
-    const client = new ContractClient(testAbi, {}, nodeClient)
+    const client = new ContractClient(testAbi, nodeClient, {})
     return client.sign_message('one', 'two').catch(err => {
       expect(err.toString()).to.equal('Error: Transaction submission not accepted.')
     })
@@ -207,7 +207,7 @@ describe('contract calls', () => {
       })
       resolve(respXdr)
     }))
-    const client = new ContractClient(testAbi, {}, nodeClient)
+    const client = new ContractClient(testAbi, nodeClient, {})
     return client.sign_message('one', 'two').then(res => {
       expect(nodeClient.transactionSubmit.calledWith({
         channelID: '0'.repeat(64),

@@ -257,7 +257,7 @@ clientCommand('contract-cli', contractCliDesc, cliOptions,
         return
       }
       const abiJSON = JSON.parse(data.toString('ascii'))
-      const contractClient = new ContractClient(abiJSON, null, client, options.channel_id)
+      const contractClient = new ContractClient(abiJSON, client, null, options.channel_id)
       const io = new ContractIO(contractClient)
       io.run()
     })
