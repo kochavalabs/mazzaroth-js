@@ -8,7 +8,12 @@ import ContractClient from '../../src/client/contract-client.js'
 import NodeClient from '../../src/client/node-client.js'
 
 const x256 = '3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c'
-const signResult = new xdrTypes.Str('asdf').toXDR('base64')
+const stringResult = new xdrTypes.Str('asdf').toXDR('base64')
+
+const guardError = new Error('Guard!')
+const guard = () => {
+  throw guardError
+}
 
 const testAbi = JSON.parse(`
 [
@@ -48,7 +53,7 @@ const testAbi = JSON.parse(`
     ]
   },
   {
-    "type": "function",
+    "type": "readonly",
     "name": "validate_signature",
     "inputs": [
       {
@@ -105,7 +110,7 @@ function getMockClient () {
         status: 1,
         stateRoot: x256,
         events: [],
-        result: signResult
+        result: stringResult
       },
       status: 1,
       statusInfo: 'status was good.'
@@ -134,8 +139,8 @@ describe('contract client construction', () => {
 describe('contract calls', () => {
   it('error for too few arguments', () => {
     const client = new ContractClient(testAbi, {}, {})
-    return client.sign_message().catch(err => {
-      expect(err).to.not.equal(null)
+    return client.sign_message().then(guard).then(guard).catch(err => {
+      expect(err).to.not.equal(guardError)
     })
   })
 
@@ -146,7 +151,7 @@ describe('contract calls', () => {
       reject(retErr)
     }))
     const client = new ContractClient(testAbi, nodeClient, {})
-    return client.sign_message('one', 'two').catch(err => {
+    return client.sign_message('one', 'two').then(guard).then(guard).catch(err => {
       expect(err).to.equal(retErr)
     })
   })
@@ -163,7 +168,7 @@ describe('contract calls', () => {
       resolve(respXdr)
     }))
     const client = new ContractClient(testAbi, nodeClient, {})
-    return client.sign_message('one', 'two').catch(err => {
+    return client.sign_message('one', 'two').then(guard).catch(err => {
       expect(err.toString()).to.equal('Error: Nonce lookup failed.')
     })
   })
@@ -175,7 +180,7 @@ describe('contract calls', () => {
       reject(retErr)
     }))
     const client = new ContractClient(testAbi, nodeClient, {})
-    return client.sign_message('one', 'two').catch(err => {
+    return client.sign_message('one', 'two').then(guard).catch(err => {
       expect(err).to.equal(retErr)
     })
   })
@@ -191,7 +196,7 @@ describe('contract calls', () => {
       resolve(respXdr)
     }))
     const client = new ContractClient(testAbi, nodeClient, {})
-    return client.sign_message('one', 'two').catch(err => {
+    return client.sign_message('one', 'two').then(guard).catch(err => {
       expect(err.toString()).to.equal('Error: Transaction submission not accepted.')
     })
   })
@@ -220,6 +225,57 @@ describe('contract calls', () => {
           }
         }
       })).to.equal(true)
+      expect(res).to.equal('asdf')
+    })
+  })
+})
+
+describe('readonly calls', () => {
+  it('read only calls should exist', () => {
+    const nodeClient = new NodeClient()
+    const client = new ContractClient(testAbi, nodeClient)
+    expect(!!client.validate_signature).to.not.equal(false)
+  })
+
+  it('errors with incorrect arg count', () => {
+    const client = new ContractClient(testAbi, {}, {})
+    return client.validate_signature().then(guard).catch(err => {
+      expect(err).to.not.equal(guardError)
+    })
+  })
+
+  it('read only submit error status', () => {
+    const nodeClient = sinon.fake()
+    nodeClient.readonlySubmit = sinon.fake.returns(new Promise((resolve, reject) => {
+      const respXdr = types.ReadonlyResponse()
+      respXdr.fromJSON({
+        result: stringResult,
+        stateRoot: x256,
+        status: 0,
+        statusInfo: 'status was good.'
+      })
+      resolve(respXdr)
+    }))
+    const client = new ContractClient(testAbi, nodeClient)
+    return client.validate_signature('asdf', 'qwer', 'zxcv').then(guard).catch(err => {
+      expect(err).to.not.equal(guardError)
+    })
+  })
+
+  it('good request/response', () => {
+    const nodeClient = sinon.fake()
+    nodeClient.readonlySubmit = sinon.fake.returns(new Promise((resolve, reject) => {
+      const respXdr = types.ReadonlyResponse()
+      respXdr.fromJSON({
+        result: stringResult,
+        stateRoot: x256,
+        status: 1,
+        statusInfo: 'status was good.'
+      })
+      resolve(respXdr)
+    }))
+    const client = new ContractClient(testAbi, nodeClient)
+    return client.validate_signature('asdf', 'qwer', 'zxcv').then((res) => {
       expect(res).to.equal('asdf')
     })
   })

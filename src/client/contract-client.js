@@ -23,62 +23,105 @@ class Client {
 
   _buildFunctions (functions) {
     functions.forEach((abiEntry) => {
-      if (abiEntry.type === 'function') {
-        this[abiEntry.name] = function (...args) {
-          return new Promise((resolve, reject) => {
-            debug('Calling contract fucntion: %o', abiEntry.name)
-            debug('Call arguments: %o', args)
-            if (args.length !== abiEntry.inputs.length) {
-              return reject(new Error('Incorrect number of arguments.'))
+      this[abiEntry.name] = function (...args) {
+        return new Promise((resolve, reject) => {
+          debug('Calling contract function: %o', abiEntry.name)
+          debug('Call arguments: %o', args)
+          if (args.length !== abiEntry.inputs.length) {
+            return reject(new Error('Incorrect number of arguments.'))
+          }
+          this.nodeClient.nonceLookup().then(result => {
+            result = result.toJSON()
+            debug('Nonce lookup returned with: %o', result)
+            if (result.status !== 1) {
+              return reject(new Error('Nonce lookup failed.'))
             }
-            this.nodeClient.nonceLookup().then(result => {
+            const params = []
+            for (let i = 0; i < args.length; i++) {
+              const type = abiEntry.inputs[i].type
+              let p = getBaseType(abiEntry.inputs[i])
+              if (this.xdrTypes[type] !== undefined) {
+                p = this.xdrTypes[type]()
+              }
+              if (p === undefined) {
+                return reject(Error('Type not identified: ' + type))
+              }
+              p.fromJSON(args[i])
+              params.push(p.toXDR('base64'))
+            }
+            const action = {
+              channelID: this.channelID,
+              nonce: result.nonce,
+              category: {
+                enum: 1,
+                value: {
+                  function: abiEntry.name,
+                  parameters: params
+                }
+              }
+            }
+            this.nodeClient.transactionSubmit(action).then(result => {
               result = result.toJSON()
-              debug('Nonce lookup returned with: %o', result)
+              debug('Transaction submit returned with: %o', result)
               if (result.status !== 1) {
-                return reject(new Error('Nonce lookup failed.'))
+                return reject(new Error('Transaction submission not accepted.'))
               }
-              const params = []
-              for (let i = 0; i < args.length; i++) {
-                const type = abiEntry.inputs[i].type
-                let p = getBaseType(abiEntry.inputs[i])
-                if (this.xdrTypes[type] !== undefined) {
-                  p = this.xdrTypes[type]()
-                }
-                if (p === undefined) {
-                  return reject(Error('Type not identified: ' + type))
-                }
-                p.fromJSON(args[i])
-                params.push(p.toXDR('base64'))
-              }
-              const action = {
-                channelID: this.channelID,
-                nonce: result.nonce,
-                category: {
-                  enum: 1,
-                  value: {
-                    function: abiEntry.name,
-                    parameters: params
-                  }
-                }
-              }
-              this.nodeClient.transactionSubmit(action).then(result => {
-                result = result.toJSON()
-                debug('Transaction submit returned with: %o', result)
-                if (result.status !== 1) {
-                  return reject(new Error('Transaction submission not accepted.'))
-                }
-                const txID = result.transactionID
-                pollResult(txID, resolve, reject, this.nodeClient, abiEntry.outputs[0], this.xdrTypes, this.lookupRetries, this.lookupTimeout)
-              }).catch(err => reject(err))
+              const txID = result.transactionID
+              pollResult(txID, resolve, reject, this.nodeClient, abiEntry.outputs[0], this.xdrTypes, this.lookupRetries, this.lookupTimeout)
             }).catch(err => reject(err))
-          })
-        }
+          }).catch(err => reject(err))
+        })
       }
     })
   }
 
   _buildReadonlys (readonlys) {
-    console.log(readonlys)
+    readonlys.forEach((abiEntry) => {
+      this[abiEntry.name] = function (...args) {
+        return new Promise((resolve, reject) => {
+          debug('Calling readonly function: %o', abiEntry.name)
+          debug('Call arguments: %o', args)
+          if (args.length !== abiEntry.inputs.length) {
+            return reject(new Error('Incorrect number of arguments.'))
+          }
+          const params = []
+          for (let i = 0; i < args.length; i++) {
+            const type = abiEntry.inputs[i].type
+            let p = getBaseType(abiEntry.inputs[i])
+            if (this.xdrTypes[type] !== undefined) {
+              p = this.xdrTypes[type]()
+            }
+            if (p === undefined) {
+              return reject(Error('Type not identified: ' + type))
+            }
+            p.fromJSON(args[i])
+            params.push(p.toXDR('base64'))
+          }
+
+          const call = {
+            function: abiEntry.name,
+            parameters: params
+          }
+          this.nodeClient.readonlySubmit(call).then(res => {
+            res = res.toJSON()
+            debug('Redonly submit response: %o', res)
+            if (res.status !== 1) {
+              return reject(new Error('Readonly status was bad: ' + res.status))
+            }
+            const resultFormat = abiEntry.outputs[0]
+            let r = getBaseType(resultFormat)
+            if (this.xdrTypes[resultFormat] !== undefined) {
+              r = this.xdrTypes[resultFormat]()
+            }
+            if (r === undefined) {
+              return reject(Error('Type not identified: ' + resultFormat))
+            }
+            r.fromXDR(res.result)
+            return resolve(r.toJSON())
+          })
+        })
+      }
+    })
   }
 }
 
