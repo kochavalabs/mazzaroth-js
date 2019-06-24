@@ -1,3 +1,4 @@
+import path from 'path'
 import Client from '../client/node-client.js'
 import ContractClient from '../client/contract-client.js'
 import ContractIO from './contract-io.js'
@@ -234,7 +235,7 @@ clientCommand('nonce-lookup', nonceLookupDesc, [],
 
 const cliOptions = [
   [
-    '-x -xdr_types <s>',
+    '-x --xdr_types <s>',
     'Custom struct types javascript file (made with xdrgen)'
   ],
   [
@@ -252,12 +253,16 @@ Examples:
 clientCommand('contract-cli', contractCliDesc, cliOptions,
   (val, options, client) => {
     fs.readFile(val, (err, data) => {
+      let xdrTypes = {}
+      if (options.xdr_types) {
+        xdrTypes = require(path.resolve(options.xdr_types))
+      }
       if (err) {
         console.log('could not read file: ' + val)
         return
       }
       const abiJSON = JSON.parse(data.toString('ascii'))
-      const contractClient = new ContractClient(abiJSON, client, null, options.channel_id)
+      const contractClient = new ContractClient(abiJSON, client, xdrTypes, options.channel_id)
       const io = new ContractIO(contractClient)
       io.run()
     })

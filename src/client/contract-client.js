@@ -110,8 +110,8 @@ class Client {
             }
             const resultFormat = abiEntry.outputs[0]
             let r = getBaseType(resultFormat)
-            if (this.xdrTypes[resultFormat] !== undefined) {
-              r = this.xdrTypes[resultFormat]()
+            if (resultFormat && this.xdrTypes[resultFormat.type] !== undefined) {
+              r = this.xdrTypes[resultFormat.type]()
             }
             if (r === undefined) {
               return reject(Error('Type not identified: ' + resultFormat))
@@ -178,8 +178,8 @@ function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrTypes, 
     if (res.status === 1) {
       if (res.receipt.status === 1) {
         let r = getBaseType(resultFormat)
-        if (xdrTypes[resultFormat] !== undefined) {
-          r = xdrTypes[resultFormat]()
+        if (resultFormat && xdrTypes[resultFormat.type] !== undefined) {
+          r = xdrTypes[resultFormat.type]()
         }
         if (r === undefined) {
           return reject(Error('Type not identified: ' + resultFormat))
