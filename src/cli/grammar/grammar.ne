@@ -21,6 +21,15 @@ float -> int {% id %}
       |  int "." posint {% function(d) {return d[0] + d[1] + d[2]; } %}
 
 string -> "\"" _string "\"" {% function(d) {return d[1]; } %}
+        | "'" _sString "'" {% function(d) {return d[1]; } %}
+
+_sString ->
+	null {% function() {return ""; } %}
+	| _sString _sStringchar {% function(d) {return d[0] + d[1];} %}
+
+_sStringchar ->
+	[^\\'] {% id %}
+	| "\\" [^] {% function(d) {return JSON.parse("\"" + d[0] + d[1] + "\""); } %}
 
 _string ->
 	null {% function() {return ""; } %}

@@ -40,13 +40,17 @@ class Client {
             for (let i = 0; i < args.length; i++) {
               const type = abiEntry.inputs[i].type
               let p = getBaseType(abiEntry.inputs[i])
+              let arg = args[i]
               if (this.xdrTypes[type] !== undefined) {
                 p = this.xdrTypes[type]()
+                if (typeof arg === 'string') {
+                  arg = JSON.parse(arg)
+                }
               }
               if (p === undefined) {
                 return reject(Error('Type not identified: ' + type))
               }
-              p.fromJSON(args[i])
+              p.fromJSON(arg)
               params.push(p.toXDR('base64'))
             }
             const action = {
@@ -87,14 +91,18 @@ class Client {
           const params = []
           for (let i = 0; i < args.length; i++) {
             const type = abiEntry.inputs[i].type
+            let arg = args[i]
             let p = getBaseType(abiEntry.inputs[i])
             if (this.xdrTypes[type] !== undefined) {
               p = this.xdrTypes[type]()
+              if (typeof arg === 'string') {
+                arg = JSON.parse(arg)
+              }
             }
             if (p === undefined) {
               return reject(Error('Type not identified: ' + type))
             }
-            p.fromJSON(args[i])
+            p.fromJSON(arg)
             params.push(p.toXDR('base64'))
           }
 
