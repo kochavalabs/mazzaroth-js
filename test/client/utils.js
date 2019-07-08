@@ -68,6 +68,15 @@ describe('RunExecutionPlan', () => {
     expect(() => RunExecutionPlan(plan, 'asdf', function () {}, getMockClient())).to.not.throw()
   })
 
+  it('should throw with empty calls array', () => {
+    const plan = {
+      host: 'asdf',
+      channelID: '0'.repeat(64),
+      calls: []
+    }
+    expect(() => RunExecutionPlan(plan, 'asdf', function () {}, getMockClient())).to.throw()
+  })
+
   it('should run correctly', () => {
     const client = getMockClient()
     client.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {

@@ -52,6 +52,9 @@ export function RunExecutionPlan (plan, privKey, progress, client) {
   }
   const nodeClient = client || new NodeClient(plan.host, privKey)
   ExecutionPlan().fromJSON(plan)
+  if (plan.calls.length === 0) {
+    throw new Error('Execution plan must have at least one call.')
+  }
   let p = Promise.resolve()
   const prog = progress || function () {}
   plan.calls.forEach((call) => {
