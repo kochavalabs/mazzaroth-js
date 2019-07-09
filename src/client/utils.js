@@ -71,5 +71,9 @@ export function RunExecutionPlan (plan, privKey, progress, client) {
       return TransactionForResult(nodeClient, action)
     })
   })
+  p = p.then(res => {
+    prog(res)
+    return res
+  })
   return p
 }

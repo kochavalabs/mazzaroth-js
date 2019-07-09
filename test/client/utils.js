@@ -132,7 +132,7 @@ describe('RunExecutionPlan', () => {
           }
         }
       })).to.equal(true)
-      expect(callbackFake.callCount).to.equal(3)
+      expect(callbackFake.callCount).to.equal(4)
       expect(res).to.equal('AAAABGFzZGY=')
     })
   })
