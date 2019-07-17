@@ -8,15 +8,15 @@ function pollResult (txID, resolve, reject, nodeClient, lookupRetries, lookupTim
   nodeClient.receiptLookup(txID).then(res => {
     res = res.toJSON()
     debug('Receipt lookup result: %o', res)
-    if (lookupRetries === 0) {
-      return reject(new Error('Request timeout.'))
-    }
     if (res.status === 1) {
       if (res.receipt.status === 1) {
         return resolve(res.receipt.result)
       } else {
         return reject(new Error('Receipt status is FAILURE'))
       }
+    }
+    if (lookupRetries === 0) {
+      return reject(new Error('Request timeout.'))
     }
     setTimeout(() => {
       pollResult(txID, resolve, reject, nodeClient, lookupRetries - 1, lookupTimeout)
