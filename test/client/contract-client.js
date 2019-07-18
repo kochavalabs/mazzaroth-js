@@ -90,7 +90,7 @@ function getMockClient () {
     respXdr.fromJSON({
       nonce: '3',
       stateStatus: {
-        previousBlock: x256,
+        previousBlock: '3',
         transactionCount: '1'
       },
       status: 1,
@@ -103,7 +103,7 @@ function getMockClient () {
     respXdr.fromJSON({
       transactionID: x256,
       stateStatus: {
-        previousBlock: x256,
+        previousBlock: '3',
         transactionCount: '1'
       },
       status: 1,
@@ -121,7 +121,7 @@ function getMockClient () {
         result: stringResult
       },
       stateStatus: {
-        previousBlock: x256,
+        previousBlock: '3',
         transactionCount: '1'
       },
       status: 1,
@@ -175,7 +175,7 @@ describe('contract calls', () => {
       respXdr.fromJSON({
         nonce: '3',
         stateStatus: {
-          previousBlock: x256,
+          previousBlock: '3',
           transactionCount: '1'
         },
         status: 2,
@@ -207,7 +207,7 @@ describe('contract calls', () => {
       const respXdr = types.TransactionSubmitResponse({
         transactionID: x256,
         stateStatus: {
-          previousBlock: x256,
+          previousBlock: '3',
           transactionCount: '1'
         },
         status: 2,
@@ -271,7 +271,7 @@ describe('readonly calls', () => {
       respXdr.fromJSON({
         result: stringResult,
         stateStatus: {
-          previousBlock: x256,
+          previousBlock: '3',
           transactionCount: '1'
         },
         status: 0,
@@ -292,7 +292,7 @@ describe('readonly calls', () => {
       respXdr.fromJSON({
         result: stringResult,
         stateStatus: {
-          previousBlock: x256,
+          previousBlock: '3',
           transactionCount: '1'
         },
         status: 1,

@@ -69,7 +69,7 @@ describe('node client test', () => {
           action: action
         },
         stateStatus: {
-          previousBlock: x256,
+          previousBlock: '3',
           transactionCount: '1'
         },
         status: 1,
@@ -101,7 +101,7 @@ describe('node client test', () => {
       response.fromJSON({
         result: '',
         stateStatus: {
-          previousBlock: x256,
+          previousBlock: '3',
           transactionCount: '1'
         },
         status: 1,
@@ -199,7 +199,7 @@ describe('node client test', () => {
       respXdr.fromJSON({
         header: blockHeader,
         stateStatus: {
-          previousBlock: x256,
+          previousBlock: '3',
           transactionCount: '1'
         },
         status: 1,
@@ -231,7 +231,7 @@ describe('node client test', () => {
           result: base64
         },
         stateStatus: {
-          previousBlock: x256,
+          previousBlock: '3',
           transactionCount: '1'
         },
         status: 1,
@@ -259,7 +259,7 @@ describe('node client test', () => {
       respXdr.fromJSON({
         nonce: '3',
         stateStatus: {
-          previousBlock: x256,
+          previousBlock: '3',
           transactionCount: '1'
         },
         status: 1,
@@ -290,7 +290,7 @@ describe('node client test', () => {
           nonce: '1'
         },
         stateStatus: {
-          previousBlock: x256,
+          previousBlock: '3',
           transactionCount: '1'
         },
         status: 1,

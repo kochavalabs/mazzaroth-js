@@ -16,7 +16,7 @@ function getMockClient () {
     respXdr.fromJSON({
       nonce: '3',
       stateStatus: {
-        previousBlock: x256,
+        previousBlock: '3',
         transactionCount: '1'
       },
       status: 1,
@@ -43,7 +43,7 @@ function getMockClient () {
         result: stringResult
       },
       stateStatus: {
-        previousBlock: x256,
+        previousBlock: '3',
         transactionCount: '1'
       },
       status: 1,
