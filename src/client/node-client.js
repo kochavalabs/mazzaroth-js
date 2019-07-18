@@ -41,7 +41,8 @@ class Client {
     this.blockLookupRoute = '/block/lookup'
     this.blockHeaderLookupRoute = '/block/header/lookup'
     this.receiptLookupRoute = '/receipt/lookup'
-    this.nonceLookupRoute = '/nonce/lookup'
+    this.nonceLookupRoute = '/account/nonce/lookup'
+    this.accountInfoLookupRoute = '/account/info/lookup'
     this.sign = signFunc || sign
   }
 
@@ -155,6 +156,21 @@ class Client {
       .post(this.host + this.nonceLookupRoute, body)
       .then(res => {
         const result = types.AccountNonceLookupResponse()
+        return result.fromXDR(res.data, 'base64')
+      })
+  }
+
+  accountInfoLookup () {
+    debug('Looking up info for account: %o', this.publicKey.toString('hex'))
+    const infoLookupRequest = types.AccountInfoLookupRequest()
+    infoLookupRequest.fromJSON({
+      account: this.publicKey.toString('hex')
+    })
+    const body = infoLookupRequest.toXDR('base64')
+    return axios
+      .post(this.host + this.accountInfoLookupRoute, body)
+      .then(res => {
+        const result = types.AccountInfoLookupResponse()
         return result.fromXDR(res.data, 'base64')
       })
   }

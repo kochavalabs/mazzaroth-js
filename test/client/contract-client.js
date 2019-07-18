@@ -89,6 +89,10 @@ function getMockClient () {
     const respXdr = types.AccountNonceLookupResponse()
     respXdr.fromJSON({
       nonce: '3',
+      stateStatus: {
+        previousBlock: x256,
+        transactionCount: '1'
+      },
       status: 1,
       statusInfo: 'status was cool.'
     })
@@ -98,6 +102,10 @@ function getMockClient () {
     const respXdr = types.TransactionSubmitResponse()
     respXdr.fromJSON({
       transactionID: x256,
+      stateStatus: {
+        previousBlock: x256,
+        transactionCount: '1'
+      },
       status: 1,
       statusInfo: 'status was good.'
     })
@@ -111,6 +119,10 @@ function getMockClient () {
         stateRoot: x256,
         events: [],
         result: stringResult
+      },
+      stateStatus: {
+        previousBlock: x256,
+        transactionCount: '1'
       },
       status: 1,
       statusInfo: 'status was good.'
@@ -162,6 +174,10 @@ describe('contract calls', () => {
       const respXdr = types.AccountNonceLookupResponse()
       respXdr.fromJSON({
         nonce: '3',
+        stateStatus: {
+          previousBlock: x256,
+          transactionCount: '1'
+        },
         status: 2,
         statusInfo: 'asdf'
       })
@@ -190,6 +206,10 @@ describe('contract calls', () => {
     nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
       const respXdr = types.TransactionSubmitResponse({
         transactionID: x256,
+        stateStatus: {
+          previousBlock: x256,
+          transactionCount: '1'
+        },
         status: 2,
         statusInfo: 'status was good.'
       })
@@ -250,7 +270,10 @@ describe('readonly calls', () => {
       const respXdr = types.ReadonlyResponse()
       respXdr.fromJSON({
         result: stringResult,
-        stateRoot: x256,
+        stateStatus: {
+          previousBlock: x256,
+          transactionCount: '1'
+        },
         status: 0,
         statusInfo: 'status was good.'
       })
@@ -268,7 +291,10 @@ describe('readonly calls', () => {
       const respXdr = types.ReadonlyResponse()
       respXdr.fromJSON({
         result: stringResult,
-        stateRoot: x256,
+        stateStatus: {
+          previousBlock: x256,
+          transactionCount: '1'
+        },
         status: 1,
         statusInfo: 'status was good.'
       })

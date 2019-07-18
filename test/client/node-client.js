@@ -68,6 +68,10 @@ describe('node client test', () => {
           address: x256,
           action: action
         },
+        stateStatus: {
+          previousBlock: x256,
+          transactionCount: '1'
+        },
         status: 1,
         statusInfo: 'status was good.'
       })
@@ -96,7 +100,10 @@ describe('node client test', () => {
       const response = types.ReadonlyResponse()
       response.fromJSON({
         result: '',
-        stateRoot: x256,
+        stateStatus: {
+          previousBlock: x256,
+          transactionCount: '1'
+        },
         status: 1,
         statusInfo: 'a good status.'
       })
@@ -191,6 +198,10 @@ describe('node client test', () => {
       const respXdr = types.BlockHeaderLookupResponse()
       respXdr.fromJSON({
         header: blockHeader,
+        stateStatus: {
+          previousBlock: x256,
+          transactionCount: '1'
+        },
         status: 1,
         statusInfo: 'status was good'
       })
@@ -219,6 +230,10 @@ describe('node client test', () => {
           events: [],
           result: base64
         },
+        stateStatus: {
+          previousBlock: x256,
+          transactionCount: '1'
+        },
         status: 1,
         statusInfo: 'status was good'
       })
@@ -243,14 +258,49 @@ describe('node client test', () => {
       const respXdr = types.AccountNonceLookupResponse()
       respXdr.fromJSON({
         nonce: '3',
+        stateStatus: {
+          previousBlock: x256,
+          transactionCount: '1'
+        },
         status: 1,
         statusInfo: 'status was cool'
       })
       nock(defaultRoute)
-        .post('/nonce/lookup', requestXdr.toXDR('base64'))
+        .post('/account/nonce/lookup', requestXdr.toXDR('base64'))
         .reply(200, respXdr.toXDR('base64'))
       const client = new NodeClient(defaultRoute, '1abc')
       return client.nonceLookup()
+        .then(resp => {
+          expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
+        })
+    })
+  })
+
+  describe('info lookup', () => {
+    it('info lookup request flow', () => {
+      const requestXdr = types.AccountInfoLookupRequest()
+      const pubKey = fromPrivate('1abc')
+      requestXdr.fromJSON({
+        account: pubKey.toString('hex')
+      })
+      const respXdr = types.AccountInfoLookupResponse()
+      respXdr.fromJSON({
+        accountInfo: {
+          name: 'asdf',
+          nonce: '1'
+        },
+        stateStatus: {
+          previousBlock: x256,
+          transactionCount: '1'
+        },
+        status: 1,
+        statusInfo: 'status was cool'
+      })
+      nock(defaultRoute)
+        .post('/account/info/lookup', requestXdr.toXDR('base64'))
+        .reply(200, respXdr.toXDR('base64'))
+      const client = new NodeClient(defaultRoute, '1abc')
+      return client.accountInfoLookup()
         .then(resp => {
           expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
         })
