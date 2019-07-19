@@ -41,7 +41,7 @@
     "debug": "^4.1.1",
     "elliptic": "^6.4.1",
     "js-xdr": "git+ssh://git@github.com/kochavalabs/js-xdr.git",
-    "mazzaroth-xdr": "git+ssh://git@github.com/kochavalabs/mazzaroth-xdr.git#account-fixes",
+    "mazzaroth-xdr": "git+ssh://git@github.com/kochavalabs/mazzaroth-xdr.git",
     "nearley": "^2.16.0"
   }
 }

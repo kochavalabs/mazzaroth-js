@@ -102,10 +102,6 @@ function getMockClient () {
     const respXdr = types.TransactionSubmitResponse()
     respXdr.fromJSON({
       transactionID: x256,
-      stateStatus: {
-        previousBlock: '3',
-        transactionCount: '1'
-      },
       status: 1,
       statusInfo: 'status was good.'
     })
