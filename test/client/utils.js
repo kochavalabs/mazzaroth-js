@@ -15,6 +15,10 @@ function getMockClient () {
     const respXdr = types.AccountNonceLookupResponse()
     respXdr.fromJSON({
       nonce: '3',
+      stateStatus: {
+        previousBlock: '3',
+        transactionCount: '1'
+      },
       status: 1,
       statusInfo: 'status was cool.'
     })
@@ -37,6 +41,10 @@ function getMockClient () {
         stateRoot: x256,
         events: [],
         result: stringResult
+      },
+      stateStatus: {
+        previousBlock: '3',
+        transactionCount: '1'
       },
       status: 1,
       statusInfo: 'status was good.'

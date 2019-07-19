@@ -233,6 +233,27 @@ clientCommand('nonce-lookup', nonceLookupDesc, [],
       })
   })
 
+const accountLookupDesc = `
+Looks up the current information for an account, Val is an account ID (256 bit hex value).
+
+Examples:
+  mazzeltov account-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
+`
+clientCommand('account-lookup', accountLookupDesc, [],
+  (val, options, client) => {
+    client.publicKey = Buffer.from(val, 'hex')
+    client.accountInfoLookup().then(res => {
+      console.log(res.toJSON())
+    })
+      .catch(error => {
+        if (error.response) {
+          console.log(error.response.data)
+        } else {
+          console.log(error)
+        }
+      })
+  })
+
 const cliOptions = [
   [
     '-x --xdr_types <s>',
