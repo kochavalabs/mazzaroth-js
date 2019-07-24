@@ -37,6 +37,10 @@ const transactionOptions = [
   [
     '-n --nonce <s>',
     'Nonce to sent the request with.'
+  ],
+  [
+    '-o --onBehalfOf <s>',
+    'Account to execute the transaction as if permissions are granted.'
   ]
 ]
 
@@ -71,7 +75,7 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
         }
       }
     }
-    client.transactionSubmit(action).then(res => {
+    client.transactionSubmit(action, options.onBehalfOf).then(res => {
       console.log(res.toJSON())
     })
       .catch(error => {
@@ -130,7 +134,7 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
         }
       }
       if (err) throw err
-      client.transactionSubmit(action).then(res => {
+      client.transactionSubmit(action, options.onBehalfOf).then(res => {
         console.log(res.toJSON())
       })
         .catch(error => {
@@ -141,6 +145,47 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
           }
         })
     })
+  })
+
+const permOptions = [
+  [
+    '-p --perm_type <args>',
+    'Permission type. 0: revoke, 1: grant'
+  ]
+]
+
+const permissionUpdateDesc = `
+Submits an update transaction to a mazzaroth node that allows another account
+to act on your behalf. The argument to this call is the public key of the
+account you would like to grant access to.
+
+Examples:
+  mazzeltov permission-update 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
+`
+clientCommand('permission-update', permissionUpdateDesc, transactionOptions.concat(permOptions),
+  (val, options, client) => {
+    const permType = Number(options.perm_type) || 0
+    const action = {
+      channelID: options.channel_id || defaultChannel,
+      nonce: (options.nonce || Math.floor(Math.random() * Math.floor(1000000000))).toString(),
+      category: {
+        enum: 3,
+        value: {
+          key: val,
+          action: permType
+        }
+      }
+    }
+    client.transactionSubmit(action, options.onBehalfOf).then(res => {
+      console.log(res.toJSON())
+    })
+      .catch(error => {
+        if (error.response) {
+          console.log(error.response.data)
+        } else {
+          console.log(error)
+        }
+      })
   })
 
 const transactionLookupDesc = `

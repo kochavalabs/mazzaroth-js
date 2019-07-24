@@ -45,10 +45,15 @@ class Client {
     this.sign = signFunc || sign
   }
 
-  transactionSubmit (action) {
+  transactionSubmit (action, onBehalfOf) {
     debug('Sending transaction')
     debug('action: %o', action)
     debug('address: %o', this.publicKey.toString('hex'))
+    debug('on behalf of: %o', onBehalfOf)
+    let authority = { enum: 0, value: '' }
+    if (onBehalfOf) {
+      authority = { enum: 1, value: onBehalfOf }
+    }
     const req = types.TransactionSubmitRequest()
     const actionXdr = types.Action()
     actionXdr.fromJSON(action)
@@ -56,6 +61,7 @@ class Client {
       transaction: {
         signature: this.sign(this.privateKey, actionXdr.toXDR()).toString('hex'),
         address: this.publicKey.toString('hex'),
+        onBehalfOf: authority,
         action: action
       }
     })

@@ -31,6 +31,10 @@ describe('node client test', () => {
       }
     }
   }
+  const authority = {
+    enum: 0,
+    value: ''
+  }
   describe('construction', () => {
     it('should pass values', () => {
       const client = new NodeClient(defaultRoute, 'ff01', 'a')
@@ -66,7 +70,8 @@ describe('node client test', () => {
         transaction: {
           signature: x512,
           address: x256,
-          action: action
+          action: action,
+          onBehalfOf: authority
         },
         stateStatus: {
           previousBlock: '3',
@@ -128,7 +133,8 @@ describe('node client test', () => {
         transaction: {
           signature: x512,
           address: pubKey.toString('hex'),
-          action: action
+          action: action,
+          onBehalfOf: authority
         }
       })
 
@@ -287,7 +293,8 @@ describe('node client test', () => {
       respXdr.fromJSON({
         accountInfo: {
           name: 'asdf',
-          nonce: '1'
+          nonce: '1',
+          permissioned_keys: []
         },
         stateStatus: {
           previousBlock: '3',
