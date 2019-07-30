@@ -71,7 +71,7 @@ describe('node client test', () => {
           signature: x512,
           address: x256,
           action: action,
-          onBehalfOf: authority
+          signer: authority
         },
         stateStatus: {
           previousBlock: '3',
@@ -134,7 +134,7 @@ describe('node client test', () => {
           signature: x512,
           address: pubKey.toString('hex'),
           action: action,
-          onBehalfOf: authority
+          signer: authority
         }
       })
 
@@ -158,6 +158,47 @@ describe('node client test', () => {
       )
 
       return client.transactionSubmit(action).then(resp => {
+        expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
+      })
+    })
+
+    it('full request flow signer', () => {
+      const request = types.TransactionSubmitRequest()
+      const privKey = Buffer.from([1, 4, 5, 5])
+      const pubKey = fromPrivate(privKey)
+      const authority = {
+        enum: 1,
+        value: x256
+      }
+      request.fromJSON({
+        transaction: {
+          signature: x512,
+          address: pubKey.toString('hex'),
+          action: action,
+          signer: authority
+        }
+      })
+
+      const respXdr = types.TransactionSubmitResponse()
+      respXdr.fromJSON({
+        transactionID: x256,
+        status: 1,
+        statusInfo: 'status was good'
+      })
+
+      const actionXdr = types.Action()
+      actionXdr.fromJSON(action)
+
+      nock(defaultRoute)
+        .post('/transaction/submit', request.toXDR('base64'))
+        .reply(200, respXdr.toXDR('base64'))
+
+      const client = new NodeClient(
+        defaultRoute, privKey,
+        fakeSign(Buffer.from(x256, 'hex'), actionXdr.toXDR())
+      )
+
+      return client.transactionSubmit(action, x256).then(resp => {
         expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
       })
     })
@@ -294,7 +335,7 @@ describe('node client test', () => {
         accountInfo: {
           name: 'asdf',
           nonce: '1',
-          permissioned_keys: []
+          permissionedKeys: []
         },
         stateStatus: {
           previousBlock: '3',
