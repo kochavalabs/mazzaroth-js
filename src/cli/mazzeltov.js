@@ -39,7 +39,7 @@ const transactionOptions = [
     'Nonce to sent the request with.'
   ],
   [
-    '-o --onBehalfOf <s>',
+    '-o --on_behalf_of <s>',
     'Account to send the transaction as.'
   ]
 ]
@@ -75,7 +75,7 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
         }
       }
     }
-    client.transactionSubmit(action, options.onBehalfOf).then(res => {
+    client.transactionSubmit(action, options.on_behalf_of).then(res => {
       console.log(res.toJSON())
     })
       .catch(error => {
@@ -134,7 +134,7 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
         }
       }
       if (err) throw err
-      client.transactionSubmit(action, options.onBehalfOf).then(res => {
+      client.transactionSubmit(action, options.on_behalf_of).then(res => {
         console.log(res.toJSON())
       })
         .catch(error => {
@@ -176,7 +176,7 @@ clientCommand('permission-update', permissionUpdateDesc, transactionOptions.conc
         }
       }
     }
-    client.transactionSubmit(action, options.onBehalfOf).then(res => {
+    client.transactionSubmit(action, options.on_behalf_of).then(res => {
       console.log(res.toJSON())
     })
       .catch(error => {
@@ -307,6 +307,10 @@ const cliOptions = [
   [
     '-c --channel_id <s>',
     'Base64 channel ID to send transaction to.'
+  ],
+  [
+    '-o --on_behalf_of <s>',
+    'Account to send the transaction as.'
   ]
 ]
 
@@ -328,7 +332,7 @@ clientCommand('contract-cli', contractCliDesc, cliOptions,
         return
       }
       const abiJSON = JSON.parse(data.toString('ascii'))
-      const contractClient = new ContractClient(abiJSON, client, xdrTypes, options.channel_id)
+      const contractClient = new ContractClient(abiJSON, client, xdrTypes, options.channel_id, options.on_behalf_of)
       const io = new ContractIO(contractClient)
       io.run()
     })

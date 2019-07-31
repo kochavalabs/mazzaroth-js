@@ -151,11 +151,12 @@ class Client {
       })
   }
 
-  nonceLookup () {
-    debug('Looking up nonce for account: %o', this.publicKey.toString('hex'))
+  nonceLookup (account) {
+    const toLookup = account || this.publicKey.toString('hex')
+    debug('Looking up nonce for account: %o', toLookup)
     const nonceLookupRequest = types.AccountNonceLookupRequest()
     nonceLookupRequest.fromJSON({
-      account: this.publicKey.toString('hex')
+      account: toLookup
     })
     const body = nonceLookupRequest.toXDR('base64')
     return axios
