@@ -59,10 +59,10 @@ class Client {
     const req = types.TransactionSubmitRequest()
     const actionXdr = types.Action()
     actionXdr.fromJSON(action)
+    action.address = this.publicKey.toString('hex')
     req.fromJSON({
       transaction: {
         signature: this.sign(signingKey, actionXdr.toXDR()).toString('hex'),
-        address: this.publicKey.toString('hex'),
         signer: authority,
         action: action
       }

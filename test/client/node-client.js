@@ -22,6 +22,7 @@ function fakeSign (ex1, ex2) {
 
 describe('node client test', () => {
   const action = {
+    address: x256,
     channelID: x256,
     nonce: '3',
     category: {
@@ -69,7 +70,6 @@ describe('node client test', () => {
       respXdr.fromJSON({
         transaction: {
           signature: x512,
-          address: x256,
           action: action,
           signer: authority
         },
@@ -132,8 +132,17 @@ describe('node client test', () => {
       request.fromJSON({
         transaction: {
           signature: x512,
-          address: pubKey.toString('hex'),
-          action: action,
+          action: {
+            address: pubKey.toString('hex'),
+            channelID: x256,
+            nonce: '3',
+            category: {
+              enum: 2,
+              value: {
+                contract: base64
+              }
+            }
+          },
           signer: authority
         }
       })
@@ -173,8 +182,17 @@ describe('node client test', () => {
       request.fromJSON({
         transaction: {
           signature: x512,
-          address: pubKey.toString('hex'),
-          action: action,
+          action: {
+            address: pubKey.toString('hex'),
+            channelID: x256,
+            nonce: '3',
+            category: {
+              enum: 2,
+              value: {
+                contract: base64
+              }
+            }
+          },
           signer: authority
         }
       })
