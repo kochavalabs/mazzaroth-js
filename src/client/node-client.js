@@ -45,24 +45,23 @@ class Client {
     this.sign = signFunc || sign
   }
 
-  transactionSubmit (action, signer) {
+  transactionSubmit (action, onBehalfOf) {
     debug('Sending transaction')
     debug('action: %o', action)
     debug('address: %o', this.publicKey.toString('hex'))
-    debug('signer of: %o', signer)
+    debug('on behalf of: %o', onBehalfOf)
     let authority = { enum: 0, value: '' }
-    let signingKey = this.privateKey
-    if (signer) {
-      authority = { enum: 1, value: signer }
-      signingKey = Buffer.from(signer, 'hex')
+    action.address = this.publicKey.toString('hex')
+    if (onBehalfOf) {
+      authority = { enum: 1, value: this.publicKey.toString('hex') }
+      action.address = onBehalfOf
     }
     const req = types.TransactionSubmitRequest()
     const actionXdr = types.Action()
     actionXdr.fromJSON(action)
-    action.address = this.publicKey.toString('hex')
     req.fromJSON({
       transaction: {
-        signature: this.sign(signingKey, actionXdr.toXDR()).toString('hex'),
+        signature: this.sign(this.privateKey, actionXdr.toXDR()).toString('hex'),
         signer: authority,
         action: action
       }

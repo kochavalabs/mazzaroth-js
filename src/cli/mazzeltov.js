@@ -39,8 +39,8 @@ const transactionOptions = [
     'Nonce to sent the request with.'
   ],
   [
-    '-s --signer <s>',
-    'Account to sign the transaction with.'
+    '-o --onBehalfOf <s>',
+    'Account to send the transaction as.'
   ]
 ]
 
@@ -75,7 +75,7 @@ clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat
         }
       }
     }
-    client.transactionSubmit(action, options.signer).then(res => {
+    client.transactionSubmit(action, options.onBehalfOf).then(res => {
       console.log(res.toJSON())
     })
       .catch(error => {
@@ -134,7 +134,7 @@ clientCommand('contract-update', contractUpdateDesc, transactionOptions,
         }
       }
       if (err) throw err
-      client.transactionSubmit(action, options.signer).then(res => {
+      client.transactionSubmit(action, options.onBehalfOf).then(res => {
         console.log(res.toJSON())
       })
         .catch(error => {
@@ -176,7 +176,7 @@ clientCommand('permission-update', permissionUpdateDesc, transactionOptions.conc
         }
       }
     }
-    client.transactionSubmit(action, options.signer).then(res => {
+    client.transactionSubmit(action, options.onBehalfOf).then(res => {
       console.log(res.toJSON())
     })
       .catch(error => {

@@ -129,20 +129,21 @@ describe('node client test', () => {
       const request = types.TransactionSubmitRequest()
       const privKey = Buffer.from([1, 4, 5, 5])
       const pubKey = fromPrivate(privKey)
+      const action = {
+        address: pubKey.toString('hex'),
+        channelID: x256,
+        nonce: '3',
+        category: {
+          enum: 2,
+          value: {
+            contract: base64
+          }
+        }
+      }
       request.fromJSON({
         transaction: {
           signature: x512,
-          action: {
-            address: pubKey.toString('hex'),
-            channelID: x256,
-            nonce: '3',
-            category: {
-              enum: 2,
-              value: {
-                contract: base64
-              }
-            }
-          },
+          action: action,
           signer: authority
         }
       })
@@ -175,27 +176,21 @@ describe('node client test', () => {
       const request = types.TransactionSubmitRequest()
       const privKey = Buffer.from([1, 4, 5, 5])
       const pubKey = fromPrivate(privKey)
+      const action = {
+        address: x256,
+        channelID: x256,
+        nonce: '3',
+        category: {
+          enum: 2,
+          value: {
+            contract: base64
+          }
+        }
+      }
       const authority = {
         enum: 1,
-        value: x256
+        value: pubKey.toString('hex')
       }
-      request.fromJSON({
-        transaction: {
-          signature: x512,
-          action: {
-            address: pubKey.toString('hex'),
-            channelID: x256,
-            nonce: '3',
-            category: {
-              enum: 2,
-              value: {
-                contract: base64
-              }
-            }
-          },
-          signer: authority
-        }
-      })
 
       const respXdr = types.TransactionSubmitResponse()
       respXdr.fromJSON({
@@ -205,7 +200,25 @@ describe('node client test', () => {
       })
 
       const actionXdr = types.Action()
-      actionXdr.fromJSON(action)
+      const updatedAction = {
+        address: pubKey.toString('hex'),
+        channelID: x256,
+        nonce: '3',
+        category: {
+          enum: 2,
+          value: {
+            contract: base64
+          }
+        }
+      }
+      actionXdr.fromJSON(updatedAction)
+      request.fromJSON({
+        transaction: {
+          signature: x512,
+          action: updatedAction,
+          signer: authority
+        }
+      })
 
       nock(defaultRoute)
         .post('/transaction/submit', request.toXDR('base64'))
@@ -213,10 +226,10 @@ describe('node client test', () => {
 
       const client = new NodeClient(
         defaultRoute, privKey,
-        fakeSign(Buffer.from(x256, 'hex'), actionXdr.toXDR())
+        fakeSign(privKey, actionXdr.toXDR())
       )
 
-      return client.transactionSubmit(action, x256).then(resp => {
+      return client.transactionSubmit(action, pubKey.toString('hex')).then(resp => {
         expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
       })
     })
