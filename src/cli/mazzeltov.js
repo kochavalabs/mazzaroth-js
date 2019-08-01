@@ -155,7 +155,7 @@ const permOptions = [
 ]
 
 const permissionUpdateDesc = `
-Submits an update transaction to a mazzaroth node that allows another account
+Submits a permission transaction to a mazzaroth node that allows another account
 to act on your behalf. The argument to this call is the public key of the
 account you would like to grant access to.
 
