@@ -45,17 +45,24 @@ class Client {
     this.sign = signFunc || sign
   }
 
-  transactionSubmit (action) {
+  transactionSubmit (action, onBehalfOf) {
     debug('Sending transaction')
     debug('action: %o', action)
     debug('address: %o', this.publicKey.toString('hex'))
+    debug('on behalf of: %o', onBehalfOf)
+    let authority = { enum: 0, value: '' }
+    action.address = this.publicKey.toString('hex')
+    if (onBehalfOf) {
+      authority = { enum: 1, value: this.publicKey.toString('hex') }
+      action.address = onBehalfOf
+    }
     const req = types.TransactionSubmitRequest()
     const actionXdr = types.Action()
     actionXdr.fromJSON(action)
     req.fromJSON({
       transaction: {
         signature: this.sign(this.privateKey, actionXdr.toXDR()).toString('hex'),
-        address: this.publicKey.toString('hex'),
+        signer: authority,
         action: action
       }
     })
@@ -144,11 +151,12 @@ class Client {
       })
   }
 
-  nonceLookup () {
-    debug('Looking up nonce for account: %o', this.publicKey.toString('hex'))
+  nonceLookup (account) {
+    const toLookup = account || this.publicKey.toString('hex')
+    debug('Looking up nonce for account: %o', toLookup)
     const nonceLookupRequest = types.AccountNonceLookupRequest()
     nonceLookupRequest.fromJSON({
-      account: this.publicKey.toString('hex')
+      account: toLookup
     })
     const body = nonceLookupRequest.toXDR('base64')
     return axios

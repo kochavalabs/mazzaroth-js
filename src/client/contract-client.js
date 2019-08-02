@@ -3,7 +3,7 @@ import Debug from 'debug'
 
 const debug = Debug('mazzeltov:contract-client')
 class Client {
-  constructor (abiJson, nodeClient, xdrTypes, channelID, lookupRetries, lookupTimeout) {
+  constructor (abiJson, nodeClient, xdrTypes, channelID, onBehalfOf, lookupRetries, lookupTimeout) {
     debug('ABI Json: %o', abiJson)
     debug('XDR Config: %o', xdrTypes)
     debug('Retries %o', lookupRetries)
@@ -11,6 +11,7 @@ class Client {
     this.lookupRetries = lookupRetries || 5
     this.lookupTimeout = lookupTimeout || 500
     this.channelID = channelID || '0'.repeat(64)
+    this.onBehalfOf = onBehalfOf
     this.xdrTypes = xdrTypes || {}
     this.abiJson = abiJson
     this.nodeClient = nodeClient
@@ -30,7 +31,7 @@ class Client {
           if (args.length !== abiEntry.inputs.length) {
             return reject(new Error('Incorrect number of arguments.'))
           }
-          this.nodeClient.nonceLookup().then(result => {
+          this.nodeClient.nonceLookup(this.onBehalfOf).then(result => {
             result = result.toJSON()
             debug('Nonce lookup returned with: %o', result)
             if (result.status !== 1) {
@@ -64,7 +65,7 @@ class Client {
                 }
               }
             }
-            this.nodeClient.transactionSubmit(action).then(result => {
+            this.nodeClient.transactionSubmit(action, this.onBehalfOf).then(result => {
               result = result.toJSON()
               debug('Transaction submit returned with: %o', result)
               if (result.status !== 1) {

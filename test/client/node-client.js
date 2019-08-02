@@ -22,6 +22,7 @@ function fakeSign (ex1, ex2) {
 
 describe('node client test', () => {
   const action = {
+    address: x256,
     channelID: x256,
     nonce: '3',
     category: {
@@ -30,6 +31,10 @@ describe('node client test', () => {
         contract: base64
       }
     }
+  }
+  const authority = {
+    enum: 0,
+    value: ''
   }
   describe('construction', () => {
     it('should pass values', () => {
@@ -65,8 +70,8 @@ describe('node client test', () => {
       respXdr.fromJSON({
         transaction: {
           signature: x512,
-          address: x256,
-          action: action
+          action: action,
+          signer: authority
         },
         stateStatus: {
           previousBlock: '3',
@@ -124,11 +129,22 @@ describe('node client test', () => {
       const request = types.TransactionSubmitRequest()
       const privKey = Buffer.from([1, 4, 5, 5])
       const pubKey = fromPrivate(privKey)
+      const action = {
+        address: pubKey.toString('hex'),
+        channelID: x256,
+        nonce: '3',
+        category: {
+          enum: 2,
+          value: {
+            contract: base64
+          }
+        }
+      }
       request.fromJSON({
         transaction: {
           signature: x512,
-          address: pubKey.toString('hex'),
-          action: action
+          action: action,
+          signer: authority
         }
       })
 
@@ -152,6 +168,68 @@ describe('node client test', () => {
       )
 
       return client.transactionSubmit(action).then(resp => {
+        expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
+      })
+    })
+
+    it('full request flow signer', () => {
+      const request = types.TransactionSubmitRequest()
+      const privKey = Buffer.from([1, 4, 5, 5])
+      const pubKey = fromPrivate(privKey)
+      const action = {
+        address: x256,
+        channelID: x256,
+        nonce: '3',
+        category: {
+          enum: 2,
+          value: {
+            contract: base64
+          }
+        }
+      }
+      const authority = {
+        enum: 1,
+        value: pubKey.toString('hex')
+      }
+
+      const respXdr = types.TransactionSubmitResponse()
+      respXdr.fromJSON({
+        transactionID: x256,
+        status: 1,
+        statusInfo: 'status was good'
+      })
+
+      const actionXdr = types.Action()
+      const updatedAction = {
+        address: pubKey.toString('hex'),
+        channelID: x256,
+        nonce: '3',
+        category: {
+          enum: 2,
+          value: {
+            contract: base64
+          }
+        }
+      }
+      actionXdr.fromJSON(updatedAction)
+      request.fromJSON({
+        transaction: {
+          signature: x512,
+          action: updatedAction,
+          signer: authority
+        }
+      })
+
+      nock(defaultRoute)
+        .post('/transaction/submit', request.toXDR('base64'))
+        .reply(200, respXdr.toXDR('base64'))
+
+      const client = new NodeClient(
+        defaultRoute, privKey,
+        fakeSign(privKey, actionXdr.toXDR())
+      )
+
+      return client.transactionSubmit(action, pubKey.toString('hex')).then(resp => {
         expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
       })
     })
@@ -287,7 +365,8 @@ describe('node client test', () => {
       respXdr.fromJSON({
         accountInfo: {
           name: 'asdf',
-          nonce: '1'
+          nonce: '1',
+          permissionedKeys: []
         },
         stateStatus: {
           previousBlock: '3',
