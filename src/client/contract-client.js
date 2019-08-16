@@ -48,8 +48,8 @@ class Client {
                 p = this.xdrTypes[type]()
                 if (typeof arg === 'object') {
                   arg = processObjectArg(arg)
-                  if (arg === null) {
-                    reject(new Error('Could not process arg: ' + arg))
+                  if (arg instanceof Error) {
+                    reject(arg)
                   }
                 }
                 if (typeof arg === 'string') {
@@ -106,8 +106,8 @@ class Client {
               p = this.xdrTypes[type]()
               if (typeof arg === 'object') {
                 arg = processObjectArg(arg)
-                if (arg === null) {
-                  reject(new Error('Could not process arg: ' + arg))
+                if (arg instanceof Error) {
+                  reject(arg)
                 }
               }
               if (typeof arg === 'string') {
@@ -224,7 +224,7 @@ function processObjectArg (arg) {
     const fileContent = fs.readFileSync(arg.value).toString('utf-8')
     return JSON.parse(fileContent)
   }
-  return null
+  return new Error('Could not process type: ' + JSON.stringify(arg))
 }
 
 export default Client
