@@ -1,3 +1,5 @@
+import fs from 'fs'
+
 import types from 'js-xdr'
 import Debug from 'debug'
 
@@ -44,6 +46,12 @@ class Client {
               let arg = args[i]
               if (this.xdrTypes[type] !== undefined) {
                 p = this.xdrTypes[type]()
+                if (typeof arg === 'object') {
+                  arg = processObjectArg(arg)
+                  if (arg instanceof Error) {
+                    reject(arg)
+                  }
+                }
                 if (typeof arg === 'string') {
                   arg = JSON.parse(arg)
                 }
@@ -96,6 +104,12 @@ class Client {
             let p = getBaseType(abiEntry.inputs[i])
             if (this.xdrTypes[type] !== undefined) {
               p = this.xdrTypes[type]()
+              if (typeof arg === 'object') {
+                arg = processObjectArg(arg)
+                if (arg instanceof Error) {
+                  reject(arg)
+                }
+              }
               if (typeof arg === 'string') {
                 arg = JSON.parse(arg)
               }
@@ -203,6 +217,14 @@ function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrTypes, 
       pollResult(txID, resolve, reject, nodeClient, resultFormat, xdrTypes, lookupRetries - 1, lookupTimeout)
     }, lookupTimeout)
   }).catch(err => reject(err))
+}
+
+function processObjectArg (arg) {
+  if (arg.type === 'file') {
+    const fileContent = fs.readFileSync(arg.value).toString('utf-8')
+    return JSON.parse(fileContent)
+  }
+  return new Error('Could not process type: ' + JSON.stringify(arg))
 }
 
 export default Client

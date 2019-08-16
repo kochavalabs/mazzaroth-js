@@ -42,8 +42,11 @@ _stringchar ->
 _ -> null | _ [\s] {% function() {} %}
 __ -> [\s] | __ [\s] {% function() {} %}
 
+fileSpecifier -> "f:" string {% function(d) {return {type: 'file', value: d[1]}; } %}
+
 arg -> "true"  {% function(d) { return true; } %}
      | "false" {% function(d) { return false; } %}
+     | fileSpecifier {% id %}
      | int  {% function(d) { return Number(d[0]); } %}
      | float {% function(d) { return Number(d[0]); } %}
      | string {% id %}
