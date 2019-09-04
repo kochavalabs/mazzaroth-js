@@ -3,7 +3,7 @@ import axios from 'axios'
 import { sign, fromPrivate } from '../crypto/ecc-ed25519.js'
 import * as types from 'mazzaroth-xdr'
 
-const debug = Debug('mazzeltov:node-client')
+const debug = Debug('mazzaroth-js:node-client')
 
 const dPriv = '0'.repeat(64)
 

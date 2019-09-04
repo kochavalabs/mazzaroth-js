@@ -2,7 +2,7 @@ import Debug from 'debug'
 import NodeClient from './node-client.js'
 import { ExecutionPlan } from 'mazzaroth-xdr'
 
-const debug = Debug('mazzeltov:client-utils')
+const debug = Debug('mazzaroth-js:client-utils')
 
 function pollResult (txID, resolve, reject, nodeClient, lookupRetries, lookupTimeout) {
   nodeClient.receiptLookup(txID).then(res => {

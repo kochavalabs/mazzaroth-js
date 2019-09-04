@@ -1,5 +1,5 @@
 {
-  "name": "mazzeltov",
+  "name": "mazzaroth-js",
   "version": "0.1.0",
   "description": "",
   "main": "dist/index.js",
@@ -7,12 +7,12 @@
     "build-grammar": "./node_modules/nearley/bin/nearleyc.js ./src/cli/grammar/grammar.ne -o ./src/cli/grammar/grammar.js",
     "build": "npm run build-grammar && npm run lint && babel src -d dist",
     "test": "npm run lint && ./node_modules/.bin/mocha --require babel-register \"test/**/*.js\"",
-    "cli": "npm run build && env DEBUG='mazzeltov*' node ./dist/cli/mazzeltov.js",
+    "cli": "npm run build && env DEBUG='mazzaroth-js*' node ./dist/cli/mazzaroth-js.js",
     "lint": "./node_modules/.bin/eslint ."
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/kochavalabs/mazzeltov.git"
+    "url": "git+ssh://git@github.com/kochavalabs/mazzaroth-js.git"
   },
   "keywords": [],
   "author": "",
@@ -40,8 +40,8 @@
     "cursor": "^0.1.5",
     "debug": "^4.1.1",
     "elliptic": "^6.4.1",
-    "js-xdr": "git+ssh://git@github.com/kochavalabs/js-xdr.git",
-    "mazzaroth-xdr": "git+ssh://git@github.com/kochavalabs/mazzaroth-xdr.git",
+    "xdr-js-serialize": "git+ssh://git@github.com/kochavalabs/xdr-js-serialize.git#develop",
+    "mazzaroth-xdr": "git+ssh://git@github.com/kochavalabs/mazzaroth-xdr.git#develop",
     "nearley": "^2.16.0"
   }
 }

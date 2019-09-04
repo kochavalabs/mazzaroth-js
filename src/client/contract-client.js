@@ -1,9 +1,9 @@
 import fs from 'fs'
 
-import types from 'js-xdr'
+import types from 'xdr-js-serialize'
 import Debug from 'debug'
 
-const debug = Debug('mazzeltov:contract-client')
+const debug = Debug('mazzaroth-js:contract-client')
 class Client {
   constructor (abiJson, nodeClient, xdrTypes, channelID, onBehalfOf, lookupRetries, lookupTimeout) {
     debug('ABI Json: %o', abiJson)

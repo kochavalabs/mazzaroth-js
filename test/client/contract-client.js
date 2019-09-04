@@ -1,4 +1,4 @@
-import xdrTypes from 'js-xdr'
+import xdrTypes from 'xdr-js-serialize'
 import * as types from 'mazzaroth-xdr'
 import { describe, it } from 'mocha'
 import { expect } from 'chai'

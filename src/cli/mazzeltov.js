@@ -60,7 +60,7 @@ Submits a call transaction to a mazzaroth node.
 (https://github.com/kochavalabs/mazzaroth-xdr)
 
 Examples:
-  mazzeltov transaction-call my_func -a 9uZz -a f1zsfABG7J
+  mazzaroth-cli transaction-call my_func -a 9uZz -a f1zsfABG7J
 `
 clientCommand('transaction-call', transactionCallDesc, transactionOptions.concat(callOptions),
   (val, options, client) => {
@@ -92,7 +92,7 @@ Submits a readonly call transaction to a mazzaroth node.
 (https://github.com/kochavalabs/mazzaroth-xdr)
 
 Examples:
-  mazzeltov readonly-call my_func -a 9uZz -a f1zsfABG7J
+  mazzaroth-cli readonly-call my_func -a 9uZz -a f1zsfABG7J
 `
 clientCommand('readonly-call', readonlyCallDesc, transactionOptions.concat(callOptions),
   (val, options, client) => {
@@ -118,7 +118,7 @@ to a file containing contract wasm bytes.
 (https://github.com/kochavalabs/mazzaroth-xdr)
 
 Examples:
-  mazzeltov contract-update ./test/data/hello_world.wasm
+  mazzaroth-cli contract-update ./test/data/hello_world.wasm
 `
 clientCommand('contract-update', contractUpdateDesc, transactionOptions,
   (val, options, client) => {
@@ -160,7 +160,7 @@ to act on your behalf. The argument to this call is the public key of the
 account you would like to grant access to.
 
 Examples:
-  mazzeltov permission-update 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
+  mazzaroth-cli permission-update 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
 `
 clientCommand('permission-update', permissionUpdateDesc, transactionOptions.concat(permOptions),
   (val, options, client) => {
@@ -193,7 +193,7 @@ Looks up the current status and results of a transaction by ID. Val is  a
 transaction ID (256 bit hex value).
 
 Examples:
-  mazzeltov transaction-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
+  mazzaroth-cli transaction-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
 `
 clientCommand('transaction-lookup', transactionLookupDesc, [],
   (val, options, client) => {
@@ -213,8 +213,8 @@ function blockLookupCommand (lookupFunc, cmd, desc) {
   const blockLookupDesc = `
 Looks up a ${desc} using either a block ID as hex or block Number.
 Examples:
-  mazzeltov ${cmd} 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
-  mazzeltov ${cmd} 1000
+  mazzaroth-cli ${cmd} 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
+  mazzaroth-cli ${cmd} 1000
   `
   clientCommand(cmd, blockLookupDesc, [],
     (val, options, client) => {
@@ -241,7 +241,7 @@ const receiptLookupDesc = `
 Looks up a transaction receipt. Val is a transaction ID (256 bit hex value).
 
 Examples:
-  mazzeltov receipt-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
+  mazzaroth-cli receipt-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
 `
 clientCommand('receipt-lookup', receiptLookupDesc, [],
   (val, options, client) => {
@@ -261,7 +261,7 @@ const nonceLookupDesc = `
 Looks up the current nonce for an account, Val is an account ID (256 bit hex value).
 
 Examples:
-  mazzeltov nonce-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
+  mazzaroth-cli nonce-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
 `
 clientCommand('nonce-lookup', nonceLookupDesc, [],
   (val, options, client) => {
@@ -282,7 +282,7 @@ const accountLookupDesc = `
 Looks up the current information for an account, Val is an account ID (256 bit hex value).
 
 Examples:
-  mazzeltov account-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
+  mazzaroth-cli account-lookup 3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c
 `
 clientCommand('account-lookup', accountLookupDesc, [],
   (val, options, client) => {
@@ -318,7 +318,7 @@ const contractCliDesc = `
 Drops into a contract cli where you can call contract functions interactively.
 
 Examples:
-  mazzeltov contract-cli abi.json
+  mazzaroth-cli contract-cli abi.json
 `
 clientCommand('contract-cli', contractCliDesc, cliOptions,
   (val, options, client) => {

@@ -3,7 +3,7 @@ import grammar from './grammar/grammar.js'
 import readline from 'readline'
 import Debug from 'debug'
 
-const debug = Debug('mazzeltov:contract-io')
+const debug = Debug('mazzaroth-cli:contract-io')
 
 function outputAbiFunc (abiEntry) {
   let output = `  ${abiEntry.name}(`
