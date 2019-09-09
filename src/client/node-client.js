@@ -3,6 +3,10 @@
  * network. For the specifics of the XDR objects used in requests and response
  * for this client see: https://github.com/kochavalabs/mazzaroth-xdr.
  *
+ * This client is a lower level tool for interacting with a node. If you would
+ * like to simply call your contract with a simplier rpc-like client, consider
+ * using the contract-client.
+ *
 */
 import Debug from 'debug'
 import axios from 'axios'
@@ -54,7 +58,7 @@ function attributeToIdentifier (attribute) {
 */
 class Client {
   /**
-   * Handles some basic setup of metadata necessary for client operations.
+   * Handles some basic setup of metadata necessary for node-client operations.
    *
    * @param host Http endpoint for the Mazzaroth node to interact with. Defaults
    *             to http://localhost:8081.
