@@ -19,7 +19,7 @@ const dPriv = '0'.repeat(64)
 
 /**
  * Helper function using a heuristic to determine if the ID being used for a
- * function is a 64 bit hex string or an int. This is necessary because we have
+ * function is a 64 char hex string or an int. This is necessary because we have
  * the ability to look up blocks by either the block number or the block ID.
  *
  * @param attribute Either an int or a hex string representing the identifying
@@ -171,7 +171,7 @@ class Client {
    * This is a synchronous readonly request hat will get the latest state based
    * on the non-consensus node that this lookup hits.
    *
-   * @param txID Hex string (64 bytes) identifier for the transaction submitted
+   * @param txID Hex string (64 chars) identifier for the transaction submitted
    *             to the Mazzaroth consensus pool.
    *
    * @return Promise that on success provides an XDR TransactionLookupResponse
@@ -197,7 +197,7 @@ class Client {
    * This is a synchronous readonly request hat will get the latest state based
    * on the non-consensus node that this lookup hits.
    *
-   * @param attribute Ethier a Number or a 64 byte hex string identifying the
+   * @param attribute Ethier a Number or a 64 char hex string identifying the
    *                  block to look up.
    *
    * @return Promise that on success provides an XDR BlockLookupResponse
@@ -223,7 +223,7 @@ class Client {
    * This is a synchronous readonly request hat will get the latest state based
    * on the non-consensus node that this lookup hits.
    *
-   * @param attribute Ethier a Number or a 64 byte hex string identifying the
+   * @param attribute Ethier a Number or a 64 char hex string identifying the
    *                  block header to look up.
    *
    * @return Promise that on success provides an XDR BlockLookupResponse
@@ -248,7 +248,7 @@ class Client {
    * a transaction was successfully executed on the consensus network and
    * contains the results of the execution.
    *
-   * @param txID Hex string (64 bytes) identifier for the transaction submitted
+   * @param txID Hex string (64 chars) identifier for the transaction submitted
    *             to the Mazzaroth consensus pool.
    *
    * @return Promise that on success provides an XDR ReceiptLookupResponse
