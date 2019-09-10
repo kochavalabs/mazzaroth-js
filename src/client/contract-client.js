@@ -33,9 +33,9 @@ class Client {
    * @param nodeClient Node-client to use for node operations.
    * @param xdrTypes If using custom xdr types, xdr-codegen output is provided
    *                 here.
-   * @param channelID Hex string, 64 bytes, that is the ID of the channel being
+   * @param channelID Hex string, 64 chars, that is the ID of the channel being
    *                  called.
-   * @param onBehalfOf Hex string, 64 bytes, ID for the account being acted on
+   * @param onBehalfOf Hex string, 64 chars, ID for the account being acted on
    *                   behalf of when using account authorization.
    * @param lookupRetries Number of times to poll before returning a failure.
    * @param lookupTimeout Ammount of time in ms to wait between requests.
