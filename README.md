@@ -14,9 +14,9 @@ npm install mazzaroth-js
 
 ## Usage
 
-For a more detailed example of how to use the this client in conjunction with
-our CLI tools, XDR generation, and our XDR code generation tool see the full
-contract [example](https://github.com/kochavalabs/full-contract-example).
+For a more detailed example of how to use the contract client in conjunction
+with our CLI tools, XDR generation, and our XDR code generation tool: see the
+full contract [example](https://github.com/kochavalabs/full-contract-example).
 
 ### Node-Client
 
@@ -86,10 +86,6 @@ client.receiptLookup(receiptID).then(res => {
   **/
 })
 ```
-
-### Contract Client
-
-TODO
 
 ## License
 
