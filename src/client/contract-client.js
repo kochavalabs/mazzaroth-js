@@ -1,10 +1,45 @@
+/**
+ * Client that provides a further abstraction for interacting with Mazzaroth
+ * nodes on top of the node-client. The idea is to build an object that you can
+ * call contract functions on abstracting the details of the blockchain.
+ *
+ * For more information on building a rust contract with our provided libraries
+ * that will help with the output needed for constructing a Contract Client,
+ * see: https://github.com/kochavalabs/mazzaroth-rs
+ *
+ * For more information on using custom xdrTypes:
+ * https://github.com/kochavalabs/mazzaroth-js
+ *
+*/
 import fs from 'fs'
-
 import types from 'xdr-js-serialize'
 import Debug from 'debug'
 
 const debug = Debug('mazzaroth-js:contract-client')
+
+/**
+ * Class that dynamically builds a new object with functions that can be called
+ * in an rpc-like fashion to interact with a Mazzaroth node.
+ *
+*/
 class Client {
+  /**
+   * Handles some basic setup of metadata necessary for contract-client
+   * operations.
+   *
+   * @param abiJson Javascript object describing the ABI of the contract being
+   *                called. An abiJSON is output when using mazzaroth-rs to
+   *                build contracts.
+   * @param nodeClient Node-client to use for node operations.
+   * @param xdrTypes If using custom xdr types, xdr-codegen output is provided
+   *                 here.
+   * @param channelID Hex string, 64 bytes, that is the ID of the channel being
+   *                  called.
+   * @param onBehalfOf Hex string, 64 bytes, ID for the account being acted on
+   *                   behalf of when using account authorization.
+   * @param lookupRetries Number of times to poll before returning a failure.
+   * @param lookupTimeout Ammount of time in ms to wait between requests.
+  */
   constructor (abiJson, nodeClient, xdrTypes, channelID, onBehalfOf, lookupRetries, lookupTimeout) {
     debug('ABI Json: %o', abiJson)
     debug('XDR Config: %o', xdrTypes)
@@ -24,6 +59,20 @@ class Client {
     this._buildReadonlys(readonlys)
   }
 
+  /**
+   * Builds, dynamically defining for the contract-client, all the write
+   * functions from the abiJson. These functions can be called on the contract
+   * client as if they were normal functions and return promises that return
+   * the end result (after polling for a receipt) of a contract execution.
+   * General process is:
+   *
+   * Lookup the account nonce -> translate the args to XDR calls -> send a
+   * transaction to the network -> poll for a receipt -> return the result.
+   *
+   * @param functions The extracted write functions from the abiJson.
+   *
+   * @return none
+  */
   _buildFunctions (functions) {
     functions.forEach((abiEntry) => {
       this[abiEntry.name] = function (...args) {
@@ -88,6 +137,22 @@ class Client {
     })
   }
 
+  /**
+   * Builds, dynamically defining for the contract-client, all the readonly
+   * functions from the abiJson. These functions can be called on the contract
+   * client as if they were normal functions and return promises that return
+   * the end result of the readonly request.
+   *
+   * Translate the args to XDR calls -> send a readonly request to the
+   * Mazzaroth node specified in the node-client -> parse and return the
+   * response.
+   *
+   * transaction to the network -> poll for a receipt -> return the result.
+   *
+   * @param functions The extracted readonly functions from the abiJson.
+   *
+   * @return none
+  */
   _buildReadonlys (readonlys) {
     readonlys.forEach((abiEntry) => {
       this[abiEntry.name] = function (...args) {
@@ -148,6 +213,13 @@ class Client {
   }
 }
 
+/**
+ * Returns an XDR type based on the type defined in the abiJson.
+ *
+ * @param output The string defined in abijson for the contract type.
+ *
+ * @return XDR type for the specified type.
+*/
 function getBaseType (output) {
   if (!output) {
     return new types.Void()
@@ -219,7 +291,18 @@ function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrTypes, 
   }).catch(err => reject(err))
 }
 
+/**
+ * There are custom types that can be passed to the contract client. For example
+ * some contracts define complex types as argument which can be passed as a file
+ * path to be read and used as an argument. This is primarily used with the
+ * contract-cli. https://github.com/kochavalabs/mazzaroth-cli
+ *
+ * @param custom arg type, currently only supporting a 'file' type.
+ *
+ * @return Javascript object or error on failure.
+*/
 function processObjectArg (arg) {
+  // For a 'file' type argument, read the file and return it as parsed JSON.
   if (arg.type === 'file') {
     const fileContent = fs.readFileSync(arg.value).toString('utf-8')
     return JSON.parse(fileContent)
