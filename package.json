@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "",
   "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "npm run lint && babel src -d dist",
     "test": "npm run lint && ./node_modules/.bin/mocha --require babel-register \"test/**/*.js\"",
@@ -12,8 +15,10 @@
     "type": "git",
     "url": "git+ssh://git@github.com/kochavalabs/mazzaroth-js.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "mazzaroth"
+  ],
+  "author": "KochavaLabs",
   "license": "ISC",
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -38,8 +43,8 @@
     "cursor": "^0.1.5",
     "debug": "^4.1.1",
     "elliptic": "^6.4.1",
-    "xdr-js-serialize": "git+ssh://git@github.com/kochavalabs/xdr-js-serialize.git#develop",
-    "mazzaroth-xdr": "git+ssh://git@github.com/kochavalabs/mazzaroth-xdr.git#develop",
+    "xdr-js-serialize": "develop",
+    "mazzaroth-xdr": "develop",
     "nearley": "^2.16.0"
   }
 }
