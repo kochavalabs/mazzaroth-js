@@ -40,12 +40,9 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "commander": "^2.19.0",
-    "cursor": "^0.1.5",
     "debug": "^4.1.1",
     "elliptic": "^6.4.1",
     "xdr-js-serialize": "develop",
-    "mazzaroth-xdr": "develop",
-    "nearley": "^2.16.0"
+    "mazzaroth-xdr": "develop"
   }
 }
