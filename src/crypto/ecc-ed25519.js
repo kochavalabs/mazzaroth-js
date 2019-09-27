@@ -2,7 +2,7 @@ import Debug from 'debug'
 
 import { eddsa as EdDSA, ec as EC } from 'elliptic'
 
-const debug = Debug('mazzeltov:ecc-ed25519')
+const debug = Debug('mazzaroth-js:ecc-ed25519')
 
 const sig = new EdDSA('ed25519')
 const curve = new EC('curve25519')
