@@ -28,10 +28,9 @@ describe('node client test', () => {
     category: {
       enum: 2,
       value: {
-        enum: 3,
-        value: {
-          key: x256,
-          action: 0
+        contract: base64,
+        schema: {
+          tables: []
         }
       }
     }
@@ -140,10 +139,9 @@ describe('node client test', () => {
         category: {
           enum: 2,
           value: {
-            enum: 1,
-            value: {
-              contract: base64,
-              version: '1.0'
+            contract: base64,
+            schema: {
+              tables: []
             }
           }
         }
@@ -191,14 +189,9 @@ describe('node client test', () => {
         category: {
           enum: 2,
           value: {
-            enum: 2,
-            value: {
-              channelID: x256,
-              contractHash: x256,
-              version: '1.0',
-              owner: x256,
-              channelName: 'cool_channel',
-              admins: []
+            contract: base64,
+            schema: {
+              tables: []
             }
           }
         }
@@ -223,14 +216,9 @@ describe('node client test', () => {
         category: {
           enum: 2,
           value: {
-            enum: 2,
-            value: {
-              channelID: x256,
-              contractHash: x256,
-              version: '1.0',
-              owner: x256,
-              channelName: 'cool_channel',
-              admins: []
+            contract: base64,
+            schema: {
+              tables: []
             }
           }
         }
