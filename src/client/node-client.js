@@ -145,8 +145,8 @@ class Client {
    * do not update channel state so they will return a result immediately
    * without hitting the consensus pool.
    *
-   * @param call JavaScript dict representing the XDR call, function name and
-   *             args, to be sent to the read-only node.
+   * @param call Javascript dict representing the XDR call, function name and
+   *             args, to be sent to the readonly node.
    *
    * @return Promise that on success provides an XDR ReadonlyResponse
   */
