@@ -13,8 +13,10 @@ jobs:
     steps:
       - checkout
       - run:
-          name: install ci tools
-          command: 'mkdir -p ~/.build_tools/node && npm install --prefix ~/.build_tools/node kl-ci-tools'
+          name: Update npm
+          command: 'sudo npm install -g npm@latest'
+      - restore_cache:
+          key: git-sha-{{ .Revision }}
       - run:
           name: update dependencies if releasing
           command: |
@@ -28,7 +30,7 @@ jobs:
           name: npm build
           command: npm run build
       - save_cache:
-          key: git-sha-{{ .Revision }}{{ .Branch }}
+          key: git-sha-{{ .Revision }}
           paths:
             - dist
             - package.json
@@ -40,7 +42,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: git-sha-{{ .Revision }}{{ .Branch }}
+          key: git-sha-{{ .Revision }}
       - run:
           name: lint
           command: npm run lint
@@ -53,7 +55,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: git-sha-{{ .Revision }}{{ .Branch }}
+          key: git-sha-{{ .Revision }}
       - run:
           name: set develop version
           command: git rev-parse develop | cut -c1-10 | xargs -I[] ~/.build_tools/node/node_modules/kl-ci-tools/dist/bin.js tag dev.[]
