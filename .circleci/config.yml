@@ -10,7 +10,7 @@ jobs:
           name: Update npm
           command: 'sudo npm install -g npm@latest'
       - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          key: git-sha-{{ .Revision }}
       - run:
           name: NPM Install
           command: npm install
@@ -18,7 +18,7 @@ jobs:
           name: NPM Build
           command: npm run build
       - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          key: git-sha-{{ .Revision }}
           paths:
             - node_modules
             - dist
@@ -28,7 +28,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          key: git-sha-{{ .Revision }}
       - run:
           name: Lint
           command: npm run lint
@@ -41,7 +41,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
+          key: git-sha-{{ .Revision }}
       - run:
           name: Set Develop Version
           command: git rev-parse develop | cut -c1-10 | xargs -I[] ./node_modules/package-tagger/index.js dev.[]
