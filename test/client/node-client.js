@@ -28,7 +28,10 @@ describe('node client test', () => {
     category: {
       enum: 2,
       value: {
-        contract: base64
+        contract: base64,
+        schema: {
+          tables: []
+        }
       }
     }
   }
@@ -136,7 +139,10 @@ describe('node client test', () => {
         category: {
           enum: 2,
           value: {
-            contract: base64
+            contract: base64,
+            schema: {
+              tables: []
+            }
           }
         }
       }
@@ -183,7 +189,10 @@ describe('node client test', () => {
         category: {
           enum: 2,
           value: {
-            contract: base64
+            contract: base64,
+            schema: {
+              tables: []
+            }
           }
         }
       }
@@ -207,7 +216,10 @@ describe('node client test', () => {
         category: {
           enum: 2,
           value: {
-            contract: base64
+            contract: base64,
+            schema: {
+              tables: []
+            }
           }
         }
       }

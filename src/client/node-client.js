@@ -145,7 +145,7 @@ class Client {
    * without hitting the consensus pool.
    *
    * @param call Javascript dict representing the XDR call, function name and
-   *             args, to be sent to the channel contract.
+   *             args, to be sent to the readonly node.
    *
    * @return Promise that on success provides an XDR ReadonlyResponse
   */
