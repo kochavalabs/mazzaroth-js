@@ -197,7 +197,7 @@ class Client {
    * This is a synchronous readonly request hat will get the latest state based
    * on the non-consensus node that this lookup hits.
    *
-   * @param attribute Ethier a Number or a 64 char hex string identifying the
+   * @param attribute Either a Number or a 64 char hex string identifying the
    *                  block to look up.
    *
    * @return Promise that on success provides an XDR BlockLookupResponse
@@ -223,7 +223,7 @@ class Client {
    * This is a synchronous readonly request hat will get the latest state based
    * on the non-consensus node that this lookup hits.
    *
-   * @param attribute Ethier a Number or a 64 char hex string identifying the
+   * @param attribute Either a Number or a 64 char hex string identifying the
    *                  block header to look up.
    *
    * @return Promise that on success provides an XDR BlockLookupResponse
