@@ -4,7 +4,7 @@
  * for this client see: https://github.com/kochavalabs/mazzaroth-xdr.
  *
  * This client is a lower level tool for interacting with a node. If you would
- * like to simply call your contract with a simplier rpc-like client, consider
+ * like to simply call your contract with a simpler rpc-like client, consider
  * using the contract-client.
  *
 */
@@ -25,7 +25,7 @@ const dPriv = '0'.repeat(64)
  * @param attribute Either an int or a hex string representing the identifying
  *                  property used to look up a block or block header
  *
- * @return Javascript dict that can be used to create the XDR union used to lookup
+ * @return JavaScript dict that can be used to create the XDR union used to lookup
  *         blocks.
 */
 function attributeToIdentifier (attribute) {
@@ -43,15 +43,15 @@ function attributeToIdentifier (attribute) {
 
 /**
  * Client used to interact with a Mazzaroth node by abstracting some of the
- * standard node operations. This includes encapsulating the node http
- * endpoints, signing operations, and the creation of a properly formed http
+ * standard node operations. This includes encapsulating the node HTTP
+ * endpoints, signing operations, and the creation of a properly formed HTTP
  * body.
  *
  * Operations available through the client include:
  *
  * - Transaction submission
  * - Block and Block Header lookup
- * - Readonly transaction lookup
+ * - Read-only transaction lookup
  * - Transaction lookup
  * - Receipt lookup
  * - Account Info lookup
@@ -60,10 +60,10 @@ class Client {
   /**
    * Handles some basic setup of metadata necessary for node-client operations.
    *
-   * @param host Http endpoint for the Mazzaroth node to interact with. Defaults
+   * @param host HTTP endpoint for the Mazzaroth node to interact with. Defaults
    *             to http://localhost:8081.
    * @param privateKey Private account key for the Mazzaroth account interacting
-   *                   with the mazzaroth node, not necessary for readonly
+   *                   with the mazzaroth node, not necessary for read-only
    *                   transactions.
    * @param signFunc Cryptographic function used to sign transactions sent to
    *                 the mazzaroth node. This defaults to the correct ed25519
@@ -102,9 +102,9 @@ class Client {
    * transactions. Write transactions are submitted asynchronously and the
    * results must be looked up by querying the Receipt for the transaction.
    *
-   * @param action Javascript dict to be converted into an XDR Action.
-   * @param onBehalfOf Public key for the acocunt that this transaction is being
-   *                   sent on behalof of if transaction authorization is being
+   * @param action JavaScript dict to be converted into an XDR Action.
+   * @param onBehalfOf Public key for the account that this transaction is being
+   *                   sent on behalf of if transaction authorization is being
    *                   used.
    *
    * @return Promise that on success provides an XDR TransactionSubmitResponse
@@ -140,17 +140,17 @@ class Client {
   }
 
   /**
-   * Submits a readonly transaction to a Mazzaroth node. Readonly transactions
+   * Submits a read-only transaction to a Mazzaroth node. Read-only transactions
    * do not update channel state so they will return a result immediately
    * without hitting the consensus pool.
    *
-   * @param call Javascript dict representing the XDR call, function name and
-   *             args, to be sent to the readonly node.
+   * @param call JavaScript dict representing the XDR call, function name and
+   *             args, to be sent to the read-only node.
    *
    * @return Promise that on success provides an XDR ReadonlyResponse
   */
   readonlySubmit (call) {
-    debug('Sending readonly request')
+    debug('Sending read-only request')
     debug('call: %o', call)
     const req = types.ReadonlyRequest()
     req.fromJSON({
@@ -168,7 +168,7 @@ class Client {
   /**
    * Used to look up the status of a submitted write transaction.
    *
-   * This is a synchronous readonly request hat will get the latest state based
+   * This is a synchronous read-only request hat will get the latest state based
    * on the non-consensus node that this lookup hits.
    *
    * @param txID Hex string (64 chars) identifier for the transaction submitted
@@ -194,7 +194,7 @@ class Client {
   /**
    * Used to look up and return a block.
    *
-   * This is a synchronous readonly request hat will get the latest state based
+   * This is a synchronous read-only request hat will get the latest state based
    * on the non-consensus node that this lookup hits.
    *
    * @param attribute Either a Number or a 64 char hex string identifying the
@@ -220,7 +220,7 @@ class Client {
   /**
    * Used to look up and return a block header.
    *
-   * This is a synchronous readonly request hat will get the latest state based
+   * This is a synchronous read-only request hat will get the latest state based
    * on the non-consensus node that this lookup hits.
    *
    * @param attribute Either a Number or a 64 char hex string identifying the
@@ -272,7 +272,7 @@ class Client {
    * Looks up the current nonce for an account. Every account has a atomically
    * increasing nonce for each executed transaction.
    *
-   * This is a synchronous readonly request hat will get the latest state based
+   * This is a synchronous read-only request hat will get the latest state based
    * on the non-consensus node that this lookup hits.
    *
    * @param account Hex string for the address (public key) of the account to
