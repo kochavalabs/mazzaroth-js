@@ -28,10 +28,7 @@ describe('node client test', () => {
     category: {
       enum: 2,
       value: {
-        contract: base64,
-        schema: {
-          tables: []
-        }
+        contract: base64
       }
     }
   }
@@ -139,10 +136,7 @@ describe('node client test', () => {
         category: {
           enum: 2,
           value: {
-            contract: base64,
-            schema: {
-              tables: []
-            }
+            contract: base64
           }
         }
       }
@@ -189,10 +183,7 @@ describe('node client test', () => {
         category: {
           enum: 2,
           value: {
-            contract: base64,
-            schema: {
-              tables: []
-            }
+            contract: base64
           }
         }
       }
@@ -216,10 +207,7 @@ describe('node client test', () => {
         category: {
           enum: 2,
           value: {
-            contract: base64,
-            schema: {
-              tables: []
-            }
+            contract: base64
           }
         }
       }
@@ -251,6 +239,8 @@ describe('node client test', () => {
     const blockHeader = {
       timestamp: 'asdf',
       blockHeight: '0',
+      transactionHeight: '0',
+      consensusSequenceNumber: '0',
       txMerkleRoot: x256,
       txReceiptRoot: x256,
       stateRoot: x256,
