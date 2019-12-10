@@ -91,7 +91,7 @@ class Client {
     this.receiptLookupRoute = '/receipt/lookup'
     this.nonceLookupRoute = '/account/nonce/lookup'
     this.accountInfoLookupRoute = '/account/info/lookup'
-    this.channelInfoLookupRoute = '/channel/info/lookup'
+    this.contractInfoLookupRoute = '/contract/info/lookup'
     this.sign = signFunc || sign
   }
 
@@ -328,19 +328,19 @@ class Client {
    *          1 - Contract
    *          2 - Config
    *
-   * @return Promise that on success provides an XDR ChannelInfoLookupResponse
+   * @return Promise that on success provides an XDR ContractInfoLookupResponse
   */
-  channelInfoLookup (infoType) {
+  contractInfoLookup (infoType) {
     debug('Looking up info contract config.')
-    const channelInfoLookup = types.ChannelInfoLookupRequest()
-    channelInfoLookup.fromJSON({
+    const contractInfoLookup = types.ContractInfoLookupRequest()
+    contractInfoLookup.fromJSON({
       infoType: infoType
     })
-    const body = channelInfoLookup.toXDR('base64')
+    const body = contractInfoLookup.toXDR('base64')
     return axios
-      .post(this.host + this.channelInfoLookupRoute, body)
+      .post(this.host + this.contractInfoLookupRoute, body)
       .then(res => {
-        const result = types.ChannelInfoLookupResponse()
+        const result = types.ContractInfoLookupResponse()
         return result.fromXDR(res.data, 'base64')
       })
   }
