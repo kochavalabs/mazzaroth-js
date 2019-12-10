@@ -414,13 +414,13 @@ describe('node client test', () => {
 
   describe('contract info lookup', () => {
     it('info lookup request contract None', () => {
-      const requestXdr = types.ChannelInfoLookupRequest()
+      const requestXdr = types.ContractInfoLookupRequest()
       requestXdr.fromJSON({
         infoType: 0
       })
-      const respXdr = types.ChannelInfoLookupResponse()
+      const respXdr = types.ContractInfoLookupResponse()
       respXdr.fromJSON({
-        channelInfo: {
+        contractInfo: {
           enum: 0,
           value: ''
         },
@@ -432,23 +432,23 @@ describe('node client test', () => {
         statusInfo: 'status was cool'
       })
       nock(defaultRoute)
-        .post('/channel/info/lookup', requestXdr.toXDR('base64'))
+        .post('/contract/info/lookup', requestXdr.toXDR('base64'))
         .reply(200, respXdr.toXDR('base64'))
       const client = new NodeClient(defaultRoute)
-      return client.channelInfoLookup(0)
+      return client.contractInfoLookup(0)
         .then(resp => {
           expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
         })
     })
 
     it('info lookup request contract Contract', () => {
-      const requestXdr = types.ChannelInfoLookupRequest()
+      const requestXdr = types.ContractInfoLookupRequest()
       requestXdr.fromJSON({
         infoType: 1
       })
-      const respXdr = types.ChannelInfoLookupResponse()
+      const respXdr = types.ContractInfoLookupResponse()
       respXdr.fromJSON({
-        channelInfo: {
+        contractInfo: {
           enum: 1,
           value: {
             contract: base64,
@@ -463,23 +463,23 @@ describe('node client test', () => {
         statusInfo: 'status was cool'
       })
       nock(defaultRoute)
-        .post('/channel/info/lookup', requestXdr.toXDR('base64'))
+        .post('/contract/info/lookup', requestXdr.toXDR('base64'))
         .reply(200, respXdr.toXDR('base64'))
       const client = new NodeClient(defaultRoute)
-      return client.channelInfoLookup(1)
+      return client.contractInfoLookup(1)
         .then(resp => {
           expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
         })
     })
 
-    it('info lookup request channel Config', () => {
-      const requestXdr = types.ChannelInfoLookupRequest()
+    it('info lookup request contract Config', () => {
+      const requestXdr = types.ContractInfoLookupRequest()
       requestXdr.fromJSON({
         infoType: 2
       })
-      const respXdr = types.ChannelInfoLookupResponse()
+      const respXdr = types.ContractInfoLookupResponse()
       respXdr.fromJSON({
-        channelInfo: {
+        contractInfo: {
           enum: 2,
           value: {
             channelID: x256,
@@ -498,10 +498,10 @@ describe('node client test', () => {
         statusInfo: 'status was cool'
       })
       nock(defaultRoute)
-        .post('/channel/info/lookup', requestXdr.toXDR('base64'))
+        .post('/contract/info/lookup', requestXdr.toXDR('base64'))
         .reply(200, respXdr.toXDR('base64'))
       const client = new NodeClient(defaultRoute)
-      return client.channelInfoLookup(2)
+      return client.contractInfoLookup(2)
         .then(resp => {
           expect(resp.toXDR()).to.deep.equal(respXdr.toXDR())
         })
