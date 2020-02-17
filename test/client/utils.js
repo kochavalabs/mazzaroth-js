@@ -66,11 +66,10 @@ describe('RunExecutionPlan', () => {
   it('should not throw with valid plan', () => {
     const plan = {
       host: 'asdf',
-      channelID: '0'.repeat(64),
-      calls: [
-        { function: 'asdf', parameters: [] },
-        { function: 'asdf', parameters: [] },
-        { function: 'asdf', parameters: [] }
+      actions: [
+        { address: x256, channelID: x256, nonce: '0', category: { enum: 1, value: { function: 'asdf', parameters: [] } } },
+        { address: x256, channelID: x256, nonce: '0', category: { enum: 1, value: { function: 'asdf', parameters: [] } } },
+        { address: x256, channelID: x256, nonce: '0', category: { enum: 1, value: { function: 'asdf', parameters: [] } } }
       ]
     }
     expect(() => RunExecutionPlan(plan, 'asdf', function () {}, getMockClient())).to.not.throw()
@@ -79,8 +78,7 @@ describe('RunExecutionPlan', () => {
   it('should throw with empty calls array', () => {
     const plan = {
       host: 'asdf',
-      channelID: '0'.repeat(64),
-      calls: []
+      actions: []
     }
     expect(() => RunExecutionPlan(plan, 'asdf', function () {}, getMockClient())).to.throw()
   })
@@ -99,16 +97,16 @@ describe('RunExecutionPlan', () => {
     const callbackFake = sinon.fake()
     const plan = {
       host: 'asdf',
-      channelID: '0'.repeat(64),
-      calls: [
-        { function: 'one', parameters: [ 'AAAAA29uZQA=', 'AAAAA3R3bwA=' ] },
-        { function: 'two', parameters: [] },
-        { function: 'three', parameters: [] }
+      actions: [
+        { address: x256, channelID: x256, nonce: '3', category: { enum: 1, value: { function: 'one', parameters: [ 'AAAAA29uZQA=', 'AAAAA3R3bwA=' ] } } },
+        { address: x256, channelID: x256, nonce: '3', category: { enum: 1, value: { function: 'two', parameters: [] } } },
+        { address: x256, channelID: x256, nonce: '3', category: { enum: 1, value: { function: 'three', parameters: [] } } }
       ]
     }
     return RunExecutionPlan(plan, 'asdf', function () { callbackFake() }, client).then(res => {
       expect(client.transactionSubmit.calledWith({
-        channelID: '0'.repeat(64),
+        channelID: x256,
+        address: x256,
         nonce: '3',
         category: {
           enum: 1,
@@ -119,7 +117,8 @@ describe('RunExecutionPlan', () => {
         }
       })).to.equal(true)
       expect(client.transactionSubmit.calledWith({
-        channelID: '0'.repeat(64),
+        channelID: x256,
+        address: x256,
         nonce: '3',
         category: {
           enum: 1,
@@ -130,7 +129,8 @@ describe('RunExecutionPlan', () => {
         }
       })).to.equal(true)
       expect(client.transactionSubmit.calledWith({
-        channelID: '0'.repeat(64),
+        channelID: x256,
+        address: x256,
         nonce: '3',
         category: {
           enum: 1,
