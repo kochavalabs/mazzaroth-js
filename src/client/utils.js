@@ -96,7 +96,7 @@ export function RunExecutionPlan (plan, privKey, progress, client) {
     plan = JSON.parse(plan)
   }
   const nodeClient = client || new NodeClient(plan.host, privKey)
-  types.ExecutionPlan().fromJSON(plan)
+  ExecutionPlan().fromJSON(plan)
   if (plan.actions.length === 0) {
     throw new Error('Execution plan must have at least one call.')
   }
