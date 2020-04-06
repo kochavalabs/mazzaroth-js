@@ -303,11 +303,11 @@ function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrTypes, 
 */
 function processObjectArg (arg) {
   // For a 'file' type argument, read the file and return it as parsed JSON.
-  if (arg.type === 'file') {
+  if (arg._type === 'file') {
     const fileContent = fs.readFileSync(arg.value).toString('utf-8')
     return JSON.parse(fileContent)
   }
-  return new Error('Could not process type: ' + JSON.stringify(arg))
+  return arg
 }
 
 export default Client
