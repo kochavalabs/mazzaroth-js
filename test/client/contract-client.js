@@ -106,43 +106,7 @@ const testAbi = JSON.parse(`
     "outputs": [
       {
         "name": "returnValue0",
-        "type": "int32[]",
-        "codec": "bytes"
-      }
-    ]
-  },
-  {
-    "type": "function",
-    "name": "custom_return",
-    "inputs": [
-      {
-        "name": "my_type",
-        "type": "MyType",
-        "codec": "bytes"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "returnValue0",
-        "type": "MyType",
-        "codec": "bytes"
-      }
-    ]
-  },
-  {
-    "type": "readonly",
-    "name": "custom_readonly",
-    "inputs": [
-      {
-        "name": "my_type",
-        "type": "MyType",
-        "codec": "bytes"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "returnValue0",
-        "type": "MyType",
+        "type": "string",
         "codec": "bytes"
       }
     ]
@@ -342,6 +306,66 @@ describe('contract calls', () => {
         }
       })).to.equal(true)
       expect(res).to.deep.equal([1, 2, 3])
+    })
+  })
+
+  it('transaction submit custom type string', () => {
+    const nodeClient = getMockClient()
+    nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
+      const respXdr = types.TransactionSubmitResponse()
+      respXdr.fromJSON({
+        transactionID: x256,
+        status: 1,
+        statusInfo: 'status was good.'
+      })
+      resolve(respXdr)
+    }))
+    const client = new ContractClient(testAbi, nodeClient, customXDR)
+    const arg = customXDR.MyType()
+
+    return client.custom_type(JSON.stringify(arg.toJSON())).then(res => {
+      expect(nodeClient.transactionSubmit.calledWith({
+        channelID: '0'.repeat(64),
+        nonce: '3',
+        category: {
+          enum: 1,
+          value: {
+            function: 'custom_type',
+            parameters: [ arg.toXDR('base64') ]
+          }
+        }
+      })).to.equal(true)
+      expect(res).to.equal('asdf')
+    })
+  })
+
+  it('transaction submit custom type dict', () => {
+    const nodeClient = getMockClient()
+    nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
+      const respXdr = types.TransactionSubmitResponse()
+      respXdr.fromJSON({
+        transactionID: x256,
+        status: 1,
+        statusInfo: 'status was good.'
+      })
+      resolve(respXdr)
+    }))
+    const client = new ContractClient(testAbi, nodeClient, customXDR)
+    const arg = customXDR.MyType()
+
+    return client.custom_type(arg.toJSON()).then(res => {
+      expect(nodeClient.transactionSubmit.calledWith({
+        channelID: '0'.repeat(64),
+        nonce: '3',
+        category: {
+          enum: 1,
+          value: {
+            function: 'custom_type',
+            parameters: [ arg.toXDR('base64') ]
+          }
+        }
+      })).to.equal(true)
+      expect(res).to.equal('asdf')
     })
   })
 })
