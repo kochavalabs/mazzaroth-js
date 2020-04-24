@@ -145,8 +145,7 @@ function getMockClient (receiptResult) {
       receipt: {
         status: 1,
         stateRoot: x256,
-        result: receiptResult,
-        statusInfo: 'status was better.'
+        result: stringResult
       },
       stateStatus: {
         previousBlock: '3',
