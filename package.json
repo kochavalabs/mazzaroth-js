@@ -43,6 +43,6 @@
     "debug": "^4.1.1",
     "elliptic": "^6.4.1",
     "xdr-js-serialize": "develop",
-    "mazzaroth-xdr": "develop"
+    "mazzaroth-xdr": "kochavalabs/mazzaroth-xdr#subscribe"
   }
 }

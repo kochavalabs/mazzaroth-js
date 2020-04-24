@@ -331,7 +331,6 @@ describe('node client test', () => {
         receipt: {
           status: 1,
           stateRoot: x256,
-          events: [],
           result: base64
         },
         stateStatus: {
