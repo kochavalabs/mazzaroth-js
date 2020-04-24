@@ -42,7 +42,7 @@
     "axios": "^0.18.0",
     "debug": "^4.1.1",
     "elliptic": "^6.4.1",
-    "mazzaroth-xdr": "0.1.0-alpha",
-    "xdr-js-serialize": "0.1.0-alpha"
+    "xdr-js-serialize": "develop",
+    "mazzaroth-xdr": "kochavalabs/mazzaroth-xdr#subscribe"
   }
 }

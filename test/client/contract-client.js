@@ -144,7 +144,6 @@ function getMockClient () {
       receipt: {
         status: 1,
         stateRoot: x256,
-        events: [],
         result: stringResult
       },
       stateStatus: {
