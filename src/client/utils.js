@@ -5,7 +5,7 @@
 import Debug from 'debug'
 import merge from 'deepmerge'
 import NodeClient from './node-client.js'
-import { ExecutionPlan, ReceiptSubscription, ValueFilter } from 'mazzaroth-xdr'
+import * as types from 'mazzaroth-xdr'
 
 const debug = Debug('mazzaroth-js:client-utils')
 
@@ -96,7 +96,7 @@ export function RunExecutionPlan (plan, privKey, progress, client) {
     plan = JSON.parse(plan)
   }
   const nodeClient = client || new NodeClient(plan.host, privKey)
-  ExecutionPlan().fromJSON(plan)
+  types.ExecutionPlan().fromJSON(plan)
   if (plan.actions.length === 0) {
     throw new Error('Execution plan must have at least one call.')
   }
@@ -140,15 +140,57 @@ export function RunExecutionPlan (plan, privKey, progress, client) {
  * @return ReceiptSubscription
 */
 export function BuildReceiptSubscription (sub) {
-  const result = ReceiptSubscription().toJSON()
+  const r = types.ReceiptSubscription().toJSON()
   if (sub.receiptFilter !== undefined) {
-    result.receiptFilter.enum = 1
-    result.receiptFilter.value = {}
-    result.receiptFilter.value.status = valFil(sub.receiptFilter.status)
-    result.receiptFilter.value.stateRoot = valFil(sub.receiptFilter.stateRoot)
+    r.receiptFilter.enum = 1
+    r.receiptFilter.value = {}
+    r.receiptFilter.value.status = valFil(sub.receiptFilter.status)
+    r.receiptFilter.value.stateRoot = valFil(sub.receiptFilter.stateRoot)
   }
 
-  return ReceiptSubscription().fromJSON(result)
+  if (sub.transactionFilter === undefined) {
+    return types.ReceiptSubscription().fromJSON(r)
+  }
+
+  const actionFilter = {}
+  actionFilter.signature = valFil(sub.transactionFilter.signature)
+  actionFilter.signer = valFil(sub.transactionFilter.signer)
+  actionFilter.address = valFil(sub.transactionFilter.address)
+  actionFilter.channelID = valFil(sub.transactionFilter.channelID)
+  actionFilter.nonce = valFil(sub.transactionFilter.nonce)
+
+  r.transactionFilter.enum = 1
+  r.transactionFilter.value = actionFilter
+
+  if (sub.transactionFilter.contractFilter !== undefined) {
+    r.transactionFilter.enum = 2
+    r.transactionFilter.value = {}
+    r.transactionFilter.value.actionFilter = actionFilter
+    r.transactionFilter.value.version = valFil(sub.transactionFilter.contractFilter.version)
+  }
+
+  if (sub.transactionFilter.configFilter !== undefined) {
+    r.transactionFilter.enum = 3
+    r.transactionFilter.value = {}
+    r.transactionFilter.value.actionFilter = actionFilter
+  }
+
+  if (sub.transactionFilter.permissionFilter !== undefined) {
+    r.transactionFilter.enum = 4
+    r.transactionFilter.value = {}
+    r.transactionFilter.value.actionFilter = actionFilter
+    r.transactionFilter.value.key = valFil(sub.transactionFilter.permissionFilter.key)
+    r.transactionFilter.value.action = valFil(sub.transactionFilter.permissionFilter.action)
+  }
+
+  if (sub.transactionFilter.callFilter !== undefined) {
+    r.transactionFilter.enum = 5
+    r.transactionFilter.value = {}
+    r.transactionFilter.value.actionFilter = actionFilter
+    r.transactionFilter.value.function = valFil(sub.transactionFilter.callFilter.function)
+  }
+
+  return types.ReceiptSubscription().fromJSON(r)
 }
 
 /**
@@ -156,7 +198,7 @@ export function BuildReceiptSubscription (sub) {
 */
 function valFil (val) {
   if (val === undefined) {
-    return ValueFilter().toJSON()
+    return types.ValueFilter().toJSON()
   }
   return { enum: 1, value: val }
 }
