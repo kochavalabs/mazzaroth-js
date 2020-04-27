@@ -173,6 +173,46 @@ describe('BuildRceiptSubscription', () => {
         receiptFilter: { enum: 1, value: { status: valFil('1'), stateRoot: valFil(x256) } },
         transactionFilter: { enum: 0, value: '' }
       }
+    },
+    {
+      desc: 'generic',
+      input: { transactionFilter: { signature: x256 + x256, signer: x256, address: x256, channelID: x256, nonce: '1' } },
+      expected: {
+        receiptFilter: { enum: 0, value: '' },
+        transactionFilter: { enum: 1, value: { signature: valFil(x256 + x256), signer: valFil(x256), address: valFil(x256), channelID: valFil(x256), nonce: valFil('1') } }
+      }
+    },
+    {
+      desc: 'contract',
+      input: { transactionFilter: { signature: x256 + x256, signer: x256, address: x256, channelID: x256, nonce: '1', contractFilter: { version: '1.0' } } },
+      expected: {
+        receiptFilter: { enum: 0, value: '' },
+        transactionFilter: { enum: 2, value: { actionFilter: { signature: valFil(x256 + x256), signer: valFil(x256), address: valFil(x256), channelID: valFil(x256), nonce: valFil('1') }, version: valFil('1.0') } }
+      }
+    },
+    {
+      desc: 'config',
+      input: { transactionFilter: { signature: x256 + x256, signer: x256, address: x256, channelID: x256, nonce: '1', configFilter: {} } },
+      expected: {
+        receiptFilter: { enum: 0, value: '' },
+        transactionFilter: { enum: 3, value: { actionFilter: { signature: valFil(x256 + x256), signer: valFil(x256), address: valFil(x256), channelID: valFil(x256), nonce: valFil('1') } } }
+      }
+    },
+    {
+      desc: 'permission',
+      input: { transactionFilter: { signature: x256 + x256, signer: x256, address: x256, channelID: x256, nonce: '1', permissionFilter: { key: x256, action: '1' } } },
+      expected: {
+        receiptFilter: { enum: 0, value: '' },
+        transactionFilter: { enum: 4, value: { actionFilter: { signature: valFil(x256 + x256), signer: valFil(x256), address: valFil(x256), channelID: valFil(x256), nonce: valFil('1') }, key: valFil(x256), action: valFil('1') } }
+      }
+    },
+    {
+      desc: 'call',
+      input: { transactionFilter: { signature: x256 + x256, signer: x256, address: x256, channelID: x256, nonce: '1', callFilter: { function: 'my_func' } } },
+      expected: {
+        receiptFilter: { enum: 0, value: '' },
+        transactionFilter: { enum: 5, value: { actionFilter: { signature: valFil(x256 + x256), signer: valFil(x256), address: valFil(x256), channelID: valFil(x256), nonce: valFil('1') }, function: valFil('my_func') } }
+      }
     }
   ]
   runs.forEach(function (run) {
