@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import * as types from 'mazzaroth-xdr'
 import sinon from 'sinon'
 
-import { RunExecutionPlan, TransactionForResult } from '../../src/client/utils.js'
+import { RunExecutionPlan, TransactionForResult, BuildReceiptSubscription } from '../../src/client/utils.js'
 
 const x256 = '3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c'
 const stringResult = new xdrTypes.Str('asdf').toXDR('base64')
@@ -159,6 +159,26 @@ describe('TransactionForResult', () => {
     }
     return TransactionForResult(getMockClient(), testAction).then(res => {
       expect(res).to.equal('AAAABGFzZGY=')
+    })
+  })
+})
+
+describe('BuildRceiptSubscription', () => {
+  const valFil = (val) => { return { enum: 1, value: val } }
+  const runs = [
+    {
+      desc: 'receipt',
+      input: { receiptFilter: { status: '1', stateRoot: x256 } },
+      expected: {
+        receiptFilter: { enum: 1, value: { status: valFil('1'), stateRoot: valFil(x256) } },
+        transactionFilter: { enum: 0, value: '' }
+      }
+    }
+  ]
+  runs.forEach(function (run) {
+    it(`Build Receipt Subscription: ${run.desc}`, () => {
+      const result = BuildReceiptSubscription(run.input)
+      expect(result.toJSON()).to.deep.equal(run.expected)
     })
   })
 })

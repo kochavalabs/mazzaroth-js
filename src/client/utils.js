@@ -4,7 +4,7 @@
 */
 import Debug from 'debug'
 import NodeClient from './node-client.js'
-import { ExecutionPlan } from 'mazzaroth-xdr'
+import { ExecutionPlan, ReceiptSubscription, ValueFilter } from 'mazzaroth-xdr'
 
 const debug = Debug('mazzaroth-js:client-utils')
 
@@ -112,4 +112,50 @@ export function RunExecutionPlan (plan, privKey, progress, client) {
     return res
   })
   return p
+}
+
+/**
+ * Translates a simpler javascript object to the proper xdr object necessary to
+ * subscribe to receipts on a Mazzaroth readonly Node. Format:
+ *
+ * {
+ *  receiptFilter: { status: 'success', stateRoot: '0'.repeat(64)   }
+ *  transactionFilter: {
+ *    signature: '0'.repeat(128),
+ *    signer: '0'.repeat(64),
+ *    address: '0'.repeat(64),
+ *    channelID: '0'.repeat(64),
+ *    nonce: '123',
+ *    contractFilter: {},
+ *    configFilter: {},
+ *    permissionFilter: {},
+ *    callFilter: {},
+ *  }
+ *
+ *
+ * }
+ *
+ * @param sub Javascript object to be translated to an xdr ReceiptSubscription
+ * @return ReceiptSubscription
+*/
+export function BuildReceiptSubscription (sub) {
+  const result = ReceiptSubscription().toJSON()
+  if (sub.receiptFilter !== undefined) {
+    result.receiptFilter.enum = 1
+    result.receiptFilter.value = {}
+    result.receiptFilter.value.status = valFil(sub.receiptFilter.status)
+    result.receiptFilter.value.stateRoot = valFil(sub.receiptFilter.stateRoot)
+  }
+
+  return ReceiptSubscription().fromJSON(result)
+}
+
+/**
+ * Helper function contructing a value filter from a value.
+*/
+function valFil (val) {
+  if (val === undefined) {
+    return ValueFilter().toJSON()
+  }
+  return { enum: 1, value: val }
 }
