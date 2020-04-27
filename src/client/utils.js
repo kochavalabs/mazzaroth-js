@@ -4,7 +4,7 @@
 */
 import Debug from 'debug'
 import NodeClient from './node-client.js'
-import * as types from 'mazzaroth-xdr'
+import { ExecutionPlan, ReceiptSubscription, ValueFilter } from 'mazzaroth-xdr'
 
 const debug = Debug('mazzaroth-js:client-utils')
 
@@ -119,90 +119,43 @@ export function RunExecutionPlan (plan, privKey, progress, client) {
  * subscribe to receipts on a Mazzaroth readonly Node. Format:
  *
  * {
- *  receiptFilter: { status: 1, stateRoot: '0'.repeat(64)   }
+ *  receiptFilter: { status: 'success', stateRoot: '0'.repeat(64)   }
  *  transactionFilter: {
  *    signature: '0'.repeat(128),
  *    signer: '0'.repeat(64),
  *    address: '0'.repeat(64),
  *    channelID: '0'.repeat(64),
  *    nonce: '123',
- *    contractFilter: {version: '.*'},
+ *    contractFilter: {},
  *    configFilter: {},
- *    permissionFilter: {key: '0'.repeat(64), action: 1 },
- *    callFilter: {function: '.*'},
+ *    permissionFilter: {},
+ *    callFilter: {},
  *  }
+ *
+ *
  * }
  *
  * @param sub Javascript object to be translated to an xdr ReceiptSubscription
  * @return ReceiptSubscription
 */
 export function BuildReceiptSubscription (sub) {
-  const r = types.ReceiptSubscription().toJSON()
+  const result = ReceiptSubscription().toJSON()
   if (sub.receiptFilter !== undefined) {
-    r.receiptFilter.enum = 1
-    r.receiptFilter.value = {}
-    r.receiptFilter.value.status = valFil(5, sub.receiptFilter.status)
-    r.receiptFilter.value.stateRoot = valFil(2, sub.receiptFilter.stateRoot)
+    result.receiptFilter.enum = 1
+    result.receiptFilter.value = {}
+    result.receiptFilter.value.status = valFil(sub.receiptFilter.status)
+    result.receiptFilter.value.stateRoot = valFil(sub.receiptFilter.stateRoot)
   }
 
-  if (sub.transactionFilter === undefined) {
-    return types.ReceiptSubscription().fromJSON(r)
-  }
-
-  const actionFilter = {}
-  actionFilter.signature = valFil(3, sub.transactionFilter.signature)
-  actionFilter.signer = valFil(2, sub.transactionFilter.signer)
-  actionFilter.address = valFil(2, sub.transactionFilter.address)
-  actionFilter.channelID = valFil(2, sub.transactionFilter.channelID)
-  actionFilter.nonce = valFil(4, sub.transactionFilter.nonce)
-
-  r.transactionFilter.enum = 1
-  r.transactionFilter.value = actionFilter
-
-  if (sub.transactionFilter.contractFilter !== undefined) {
-    r.transactionFilter.enum = 2
-    r.transactionFilter.value = {}
-    r.transactionFilter.value.actionFilter = actionFilter
-    r.transactionFilter.value.version = valFil(1, sub.transactionFilter.contractFilter.version)
-  }
-
-  if (sub.transactionFilter.configFilter !== undefined) {
-    r.transactionFilter.enum = 3
-    r.transactionFilter.value = {}
-    r.transactionFilter.value.actionFilter = actionFilter
-  }
-
-  if (sub.transactionFilter.permissionFilter !== undefined) {
-    r.transactionFilter.enum = 4
-    r.transactionFilter.value = {}
-    r.transactionFilter.value.actionFilter = actionFilter
-    r.transactionFilter.value.key = valFil(2, sub.transactionFilter.permissionFilter.key)
-    r.transactionFilter.value.action = valFil(5, sub.transactionFilter.permissionFilter.action)
-  }
-
-  if (sub.transactionFilter.callFilter !== undefined) {
-    r.transactionFilter.enum = 5
-    r.transactionFilter.value = {}
-    r.transactionFilter.value.actionFilter = actionFilter
-    r.transactionFilter.value.function = valFil(1, sub.transactionFilter.callFilter.function)
-  }
-
-  return types.ReceiptSubscription().fromJSON(r)
+  return ReceiptSubscription().fromJSON(result)
 }
 
 /**
  * Helper function contructing a value filter from a value.
- *
- *   NONE = 0,
- *   STRING = 1,
- *   HASH32 = 2,
- *   HASH64 = 3,
- *   UHYPER = 4,
- *   INT = 5,
 */
-function valFil (enu, val) {
+function valFil (val) {
   if (val === undefined) {
-    return types.ValueFilter().toJSON()
+    return ValueFilter().toJSON()
   }
-  return { enum: enu, value: val }
+  return { enum: 1, value: val }
 }
