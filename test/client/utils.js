@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import * as types from 'mazzaroth-xdr'
 import sinon from 'sinon'
 
-import { RunExecutionPlan, TransactionForResult, BuildReceiptSubscription, JSONtoXDR, XDRtoJSON } from '../../src/client/utils.js'
+import { RunExecutionPlan, TransactionForResult, BuildReceiptSubscription } from '../../src/client/utils.js'
 
 const x256 = '3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c'
 const stringResult = new xdrTypes.Str('asdf').toXDR('base64')
@@ -164,54 +164,14 @@ describe('TransactionForResult', () => {
 })
 
 describe('BuildRceiptSubscription', () => {
-  const valFil = (e, val) => { return { enum: e, value: val } }
+  const valFil = (val) => { return { enum: 1, value: val } }
   const runs = [
     {
       desc: 'receipt',
-      input: { receiptFilter: { status: 1, stateRoot: x256 } },
+      input: { receiptFilter: { status: '1', stateRoot: x256 } },
       expected: {
-        receiptFilter: { enum: 1, value: { status: valFil(5, 1), stateRoot: valFil(2, x256) } },
+        receiptFilter: { enum: 1, value: { status: valFil('1'), stateRoot: valFil(x256) } },
         transactionFilter: { enum: 0, value: '' }
-      }
-    },
-    {
-      desc: 'generic',
-      input: { transactionFilter: { signature: x256 + x256, signer: x256, address: x256, channelID: x256, nonce: '1' } },
-      expected: {
-        receiptFilter: { enum: 0, value: '' },
-        transactionFilter: { enum: 1, value: { signature: valFil(3, x256 + x256), signer: valFil(2, x256), address: valFil(2, x256), channelID: valFil(2, x256), nonce: valFil(4, '1') } }
-      }
-    },
-    {
-      desc: 'contract',
-      input: { transactionFilter: { signature: x256 + x256, signer: x256, address: x256, channelID: x256, nonce: '1', contractFilter: { version: '1.0' } } },
-      expected: {
-        receiptFilter: { enum: 0, value: '' },
-        transactionFilter: { enum: 2, value: { actionFilter: { signature: valFil(3, x256 + x256), signer: valFil(2, x256), address: valFil(2, x256), channelID: valFil(2, x256), nonce: valFil(4, '1') }, version: valFil(1, '1.0') } }
-      }
-    },
-    {
-      desc: 'config',
-      input: { transactionFilter: { signature: x256 + x256, signer: x256, address: x256, channelID: x256, nonce: '1', configFilter: {} } },
-      expected: {
-        receiptFilter: { enum: 0, value: '' },
-        transactionFilter: { enum: 3, value: { actionFilter: { signature: valFil(3, x256 + x256), signer: valFil(2, x256), address: valFil(2, x256), channelID: valFil(2, x256), nonce: valFil(4, '1') } } }
-      }
-    },
-    {
-      desc: 'permission',
-      input: { transactionFilter: { signature: x256 + x256, signer: x256, address: x256, channelID: x256, nonce: '1', permissionFilter: { key: x256, action: 1 } } },
-      expected: {
-        receiptFilter: { enum: 0, value: '' },
-        transactionFilter: { enum: 4, value: { actionFilter: { signature: valFil(3, x256 + x256), signer: valFil(2, x256), address: valFil(2, x256), channelID: valFil(2, x256), nonce: valFil(4, '1') }, key: valFil(2, x256), action: valFil(5, 1) } }
-      }
-    },
-    {
-      desc: 'call',
-      input: { transactionFilter: { signature: x256 + x256, signer: x256, address: x256, channelID: x256, nonce: '1', callFilter: { function: 'my_func' } } },
-      expected: {
-        receiptFilter: { enum: 0, value: '' },
-        transactionFilter: { enum: 5, value: { actionFilter: { signature: valFil(3, x256 + x256), signer: valFil(2, x256), address: valFil(2, x256), channelID: valFil(2, x256), nonce: valFil(4, '1') }, function: valFil(1, 'my_func') } }
       }
     }
   ]
@@ -220,95 +180,5 @@ describe('BuildRceiptSubscription', () => {
       const result = BuildReceiptSubscription(run.input)
       expect(result.toJSON()).to.deep.equal(run.expected)
     })
-  })
-})
-
-describe('JSONtoXDR', () => {
-  it('error for bad type', () => {
-    expect(() => JSONtoXDR('', 'badtype')).to.throw()
-  })
-
-  it('throw bad property', () => {
-    const expected = types.Transaction().toJSON()
-    expected.badprop = 'asdf'
-    expect(() => JSONtoXDR(JSON.stringify(expected), 'Transaction')).to.throw()
-  })
-
-  it('basic type convert', () => {
-    const expected = types.Transaction()
-    expect(JSONtoXDR('{}', 'Transaction')).to.equal(expected.toXDR('base64'))
-  })
-
-  it('basic deep convert', () => {
-    const input = '{"action": { "nonce": "3" } }'
-    const expected = types.Transaction()
-    const expectedJSON = expected.toJSON()
-    expectedJSON.action.nonce = '3'
-    expected.fromJSON(expectedJSON)
-    expect(JSONtoXDR(input, 'Transaction')).to.equal(expected.toXDR('base64'))
-  })
-
-  it('complex type convert', () => {
-    const json = types.Transaction().toJSON()
-    json.action = {
-      address: x256,
-      channelID: x256,
-      nonce: '3',
-      category: {
-        enum: 2,
-        value: {
-          enum: 3,
-          value: {
-            key: x256,
-            action: 0
-          }
-        }
-      }
-    }
-    const expected = types.Transaction()
-    expected.fromJSON(json)
-    expect(JSONtoXDR(JSON.stringify(json), 'Transaction')).to.equal(expected.toXDR('base64'))
-  })
-})
-
-describe('XDRtoJSON', () => {
-  it('error for bad type', () => {
-    expect(() => XDRtoJSON('', 'badtype')).to.throw()
-  })
-
-  it('error for bad format', () => {
-    expect(() => XDRtoJSON('', 'Transaction', 'badformat')).to.throw()
-  })
-
-  it('basic type convert default', () => {
-    const tx = types.Transaction()
-    expect(XDRtoJSON(tx.toXDR('base64'), 'Transaction')).to.equal(JSON.stringify(tx.toJSON()))
-  })
-
-  it('basic type convert hex', () => {
-    const tx = types.Transaction()
-    expect(XDRtoJSON(tx.toXDR('hex'), 'Transaction', 'hex')).to.equal(JSON.stringify(tx.toJSON()))
-  })
-
-  it('complex type convert default', () => {
-    const json = types.Transaction().toJSON()
-    json.action = {
-      address: x256,
-      channelID: x256,
-      nonce: '3',
-      category: {
-        enum: 2,
-        value: {
-          enum: 3,
-          value: {
-            key: x256,
-            action: 0
-          }
-        }
-      }
-    }
-    const input = types.Transaction()
-    input.fromJSON(json)
-    expect(XDRtoJSON(input.toXDR('base64'), 'Transaction')).to.equal(JSON.stringify(json))
   })
 })
