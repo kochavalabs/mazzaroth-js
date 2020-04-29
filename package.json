@@ -42,7 +42,8 @@
     "axios": "^0.18.0",
     "debug": "^4.1.1",
     "elliptic": "^6.4.1",
-    "xdr-js-serialize": "develop",
-    "mazzaroth-xdr": "kochavalabs/mazzaroth-xdr#subscribe"
+    "mazzaroth-xdr": "kochavalabs/mazzaroth-xdr#subscribe",
+    "ws": "^7.2.5",
+    "xdr-js-serialize": "develop"
   }
 }
