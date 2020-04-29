@@ -1,6 +1,9 @@
+import WebSocket from 'ws'
+
 import NodeClient from './client/node-client.js'
 import ContractClient from './client/contract-client.js'
-import { RunExecutionPlan } from './client/utils.js'
+import { ReceiptSubscriptionResult } from 'mazzaroth-xdr'
+import { RunExecutionPlan, BuildReceiptSubscription } from './client/utils.js'
 import { fromPrivate, generateKeys } from './crypto/ecc-ed25519.js'
 
 function AccountGenerate () {
@@ -11,4 +14,17 @@ function AddressFromPrivate (priv) {
   return fromPrivate(priv)
 }
 
-export { NodeClient, ContractClient, AccountGenerate, RunExecutionPlan, AddressFromPrivate }
+function ReceiptSubscribe (host, subscriptionObject, onMessage) {
+  const ws = new WebSocket(`ws://${host}/subscribe/receipt`)
+  ws.onopen = function () {
+    const subscription = BuildReceiptSubscription(subscriptionObject)
+    ws.send(subscription.toXDR('base64'))
+  }
+  ws.onmessage = function (e) {
+    const result = ReceiptSubscriptionResult()
+    result.fromXDR(e.data, 'base64')
+    onMessage(result.toJSON())
+  }
+}
+
+export { NodeClient, ContractClient, AccountGenerate, RunExecutionPlan, AddressFromPrivate, ReceiptSubscribe }
