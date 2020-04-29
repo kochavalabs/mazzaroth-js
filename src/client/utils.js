@@ -127,13 +127,11 @@ export function RunExecutionPlan (plan, privKey, progress, client) {
  *    address: '0'.repeat(64),
  *    channelID: '0'.repeat(64),
  *    nonce: '123',
- *    contractFilter: {},
- *    configFilter: {},
- *    permissionFilter: {},
+ *    contractFilter: {version: '.*'},
+ *    configFilter: {key: '0'.repeat(64), action: '1' },
+ *    permissionFilter: {function: '.*'},
  *    callFilter: {},
  *  }
- *
- *
  * }
  *
  * @param sub Javascript object to be translated to an xdr ReceiptSubscription
