@@ -44,7 +44,7 @@
     "debug": "^4.1.1",
     "deepmerge": "^4.2.2",
     "elliptic": "^6.4.1",
-    "mazzaroth-xdr": "kochavalabs/mazzaroth-xdr#subscribe",
+    "mazzaroth-xdr": "develop",
     "ws": "^7.2.5",
     "xdr-js-serialize": "develop"
   }
