@@ -183,7 +183,7 @@ class Client {
     req.fromJSON({
       transactionID: txID
     })
-    const body = types.TransactionLookupRequest().toXDR('base64')
+    const body = req.toXDR('base64')
     return axios
       .post(this.host + this.transactionLookupRoute, body)
       .then(res => {
