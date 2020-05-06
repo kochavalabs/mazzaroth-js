@@ -4,10 +4,12 @@ import { ReceiptSubscriptionResult } from 'mazzaroth-xdr'
 import { RunExecutionPlan, BuildReceiptSubscription } from './client/utils.js'
 import { fromPrivate, generateKeys } from './crypto/ecc-ed25519.js'
 
-let Socket = WebSocket
+let Socket = null
 
-if (Socket === null) {
+if (typeof WebSocket === 'undefined') {
   Socket = require('ws')
+} else {
+  Socket = WebSocket
 }
 
 function AccountGenerate () {
