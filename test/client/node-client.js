@@ -67,7 +67,7 @@ describe('node client test', () => {
   describe('transaction lookup', () => {
     it('full request flow', (done) => {
       const requestXdr = types.TransactionLookupRequest()
-      requestXdr.toJSON({
+      requestXdr.fromJSON({
         transactionID: x256
       })
       const respXdr = new types.TransactionLookupResponse()
