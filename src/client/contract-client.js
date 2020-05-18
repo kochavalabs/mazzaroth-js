@@ -91,10 +91,9 @@ class Client {
             const params = []
             for (let i = 0; i < args.length; i++) {
               const type = abiEntry.inputs[i].type
-              let p = getBaseType(abiEntry.inputs[i])
+              const p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
               let arg = args[i]
               if (this.xdrTypes[type] !== undefined) {
-                p = this.xdrTypes[type]()
                 if (typeof arg === 'object') {
                   arg = processObjectArg(arg)
                   if (arg instanceof Error) {
@@ -166,9 +165,8 @@ class Client {
           for (let i = 0; i < args.length; i++) {
             const type = abiEntry.inputs[i].type
             let arg = args[i]
-            let p = getBaseType(abiEntry.inputs[i])
+            let p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
             if (this.xdrTypes[type] !== undefined) {
-              p = this.xdrTypes[type]()
               if (typeof arg === 'object') {
                 arg = processObjectArg(arg)
                 if (arg instanceof Error) {
@@ -197,10 +195,7 @@ class Client {
               return reject(new Error('Readonly status was bad: ' + res.status))
             }
             const resultFormat = abiEntry.outputs[0]
-            let r = getBaseType(resultFormat)
-            if (resultFormat && this.xdrTypes[resultFormat.type] !== undefined) {
-              r = this.xdrTypes[resultFormat.type]()
-            }
+            const r = getXDRObject(resultFormat)
             if (r === undefined) {
               return reject(Error('Type not identified: ' + resultFormat))
             }
@@ -217,10 +212,11 @@ class Client {
  * Returns an XDR type based on the type defined in the abiJson.
  *
  * @param output The string defined in abijson for the contract type.
+ * @param xdrTypes The custom xdr types for the contract
  *
  * @return XDR type for the specified type.
 */
-function getBaseType (output) {
+export function getXDRObject (output, xdrTypes) {
   if (!output) {
     return new types.Void()
   }
@@ -255,7 +251,10 @@ function getBaseType (output) {
     case 'bytes':
       return new types.VarOpaque()
     default:
-      return undefined
+      XdrType = xdrTypes[baseType]
+  }
+  if (XdrType === undefined) {
+    return undefined
   }
   if (baseType + '[]' === typeStr) {
     return new types.VarArray(Math.pow(2, 32) - 1, () => { return new XdrType() })
@@ -272,10 +271,7 @@ function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrTypes, 
     }
     if (res.status === 1) {
       if (res.receipt.status === 1) {
-        let r = getBaseType(resultFormat)
-        if (resultFormat && xdrTypes[resultFormat.type] !== undefined) {
-          r = xdrTypes[resultFormat.type]()
-        }
+        const r = getXDRObject(resultFormat, xdrTypes)
         if (r === undefined) {
           return reject(Error('Type not identified: ' + resultFormat))
         }

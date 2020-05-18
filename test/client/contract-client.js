@@ -4,11 +4,15 @@ import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import sinon from 'sinon'
 
-import ContractClient from '../../src/client/contract-client.js'
+import ContractClient, { getXDRObject } from '../../src/client/contract-client.js'
+
 import NodeClient from '../../src/client/node-client.js'
 
 const x256 = '3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c'
 const stringResult = new xdrTypes.Str('asdf').toXDR('base64')
+const intArray = new xdrTypes.VarArray(2147483647, () => new xdrTypes.Int())
+intArray.fromJSON([1, 2, 3])
+const intArrayResult = intArray.toXDR('base64')
 
 const guardError = new Error('Guard!')
 const guard = () => {
@@ -106,7 +110,7 @@ const testAbi = JSON.parse(`
     "outputs": [
       {
         "name": "returnValue0",
-        "type": "string",
+        "type": "int32[]",
         "codec": "bytes"
       }
     ]
@@ -114,8 +118,9 @@ const testAbi = JSON.parse(`
 ]
 `)
 
-function getMockClient () {
+function getMockClient (receiptResult) {
   const client = sinon.fake()
+  receiptResult = receiptResult || intArrayResult
   client.nonceLookup = sinon.fake.returns(new Promise((resolve, reject) => {
     const respXdr = types.AccountNonceLookupResponse()
     respXdr.fromJSON({
@@ -144,7 +149,7 @@ function getMockClient () {
       receipt: {
         status: 1,
         stateRoot: x256,
-        result: stringResult
+        result: receiptResult
       },
       stateStatus: {
         previousBlock: '3',
@@ -248,7 +253,7 @@ describe('contract calls', () => {
   })
 
   it('transaction submit success', () => {
-    const nodeClient = getMockClient()
+    const nodeClient = getMockClient(stringResult)
     nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
       const respXdr = types.TransactionSubmitResponse()
       respXdr.fromJSON({
@@ -271,7 +276,7 @@ describe('contract calls', () => {
           }
         }
       })).to.equal(true)
-      expect(res).to.equal('asdf')
+      expect(res).to.deep.equal('asdf')
     })
   })
 
@@ -301,7 +306,7 @@ describe('contract calls', () => {
           }
         }
       })).to.equal(true)
-      expect(res).to.equal('asdf')
+      expect(res).to.deep.equal([1, 2, 3])
     })
   })
 
@@ -331,7 +336,7 @@ describe('contract calls', () => {
           }
         }
       })).to.equal(true)
-      expect(res).to.equal('asdf')
+      expect(res).to.deep.equal([1, 2, 3])
     })
   })
 })
@@ -389,6 +394,37 @@ describe('readonly calls', () => {
     const client = new ContractClient(testAbi, nodeClient)
     return client.validate_signature('asdf', 'qwer', 'zxcv').then((res) => {
       expect(res).to.equal('asdf')
+    })
+  })
+})
+
+describe('getXDRObject', () => {
+  const runs = [
+    { desc: 'bool', input: 'bool', expected: new xdrTypes.Bool() },
+    { desc: 'int32', input: 'int32', expected: new xdrTypes.Int() },
+    { desc: 'uint32', input: 'uint32', expected: new xdrTypes.UInt() },
+    { desc: 'int64', input: 'int64', expected: new xdrTypes.Hyper() },
+    { desc: 'uint64', input: 'uint64', expected: new xdrTypes.UHyper() },
+    { desc: 'f32', input: 'f32', expected: new xdrTypes.Float() },
+    { desc: 'f64', input: 'f64', expected: new xdrTypes.Double() },
+    { desc: 'string', input: 'string', expected: new xdrTypes.Str() },
+    { desc: 'bytes', input: 'bytes', expected: new xdrTypes.VarOpaque() },
+    {
+      desc: 'array',
+      input: 'bool[]',
+      expected: new xdrTypes.VarArray(Math.pow(2, 32) - 1, () => { return new types.Bool() })
+    },
+    { desc: 'custom', input: 'MyType', expected: customXDR.MyType() },
+    {
+      desc: 'custom type',
+      input: 'MyType[]',
+      expected: new xdrTypes.VarArray(Math.pow(2, 32) - 1, () => { return new customXDR.MyType() })
+    }
+  ]
+  runs.forEach(function (run) {
+    it(`Build Receipt Subscription: ${run.desc}`, () => {
+      const result = getXDRObject({ type: run.input }, customXDR)
+      expect(result.toJSON()).to.deep.equal(run.expected.toJSON())
     })
   })
 })
