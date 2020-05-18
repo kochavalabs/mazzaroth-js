@@ -91,14 +91,9 @@ class Client {
             const params = []
             for (let i = 0; i < args.length; i++) {
               const type = abiEntry.inputs[i].type
+              const p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
               let arg = args[i]
-              if (type === 'string' || type === 'uint64' || type === 'int64') {
-                params.push(arg)
-              } else if (this.xdrTypes[type] !== undefined) {
-                const p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
-                if (p === undefined) {
-                  return reject(Error('Type not identified: ' + type))
-                }
+              if (this.xdrTypes[type] !== undefined) {
                 if (typeof arg === 'object') {
                   arg = processObjectArg(arg)
                   if (arg instanceof Error) {
@@ -167,13 +162,8 @@ class Client {
           for (let i = 0; i < args.length; i++) {
             const type = abiEntry.inputs[i].type
             let arg = args[i]
-            if (type === 'string' || type === 'uint64' || type === 'int64') {
-              params.push(arg)
-            } else if (this.xdrTypes[type] !== undefined) {
-              const p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
-              if (p === undefined) {
-                return reject(Error('Type not identified: ' + type))
-              }
+            let p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
+            if (this.xdrTypes[type] !== undefined) {
               if (typeof arg === 'object') {
                 arg = processObjectArg(arg)
                 if (arg instanceof Error) {
@@ -199,13 +189,7 @@ class Client {
               return reject(new Error('Readonly status was bad: ' + res.status))
             }
             const resultFormat = abiEntry.outputs[0]
-            // If the return is not a special type, just resolve the result
-            if (resultFormat.type === 'string' || resultFormat.type === 'uint64' || resultFormat.type === 'int64') {
-              return resolve(res.result)
-            }
-
-            // Otherwise parse the json result
-            const r = getXDRObject(resultFormat, this.xdrTypes)
+            const r = getXDRObject(resultFormat)
             if (r === undefined) {
               return reject(Error('Type not identified: ' + resultFormat.type))
             }
@@ -223,7 +207,7 @@ class Client {
  * Returns an XDR type based on the type defined in the abiJson.
  *
  * @param output The string defined in abijson for the contract type.
- * @param xdrTypes The custom xdr types for the contract
+ * @param output The string defined in abijson for the contract type.
  *
  * @return XDR type for the specified type.
 */
@@ -282,12 +266,6 @@ function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrTypes, 
     }
     if (res.status === 1) {
       if (res.receipt.status === 1) {
-        // If the return is not a special type, just resolve the result
-        if (resultFormat.type === 'string' || resultFormat.type === 'uint64' || resultFormat.type === 'int64') {
-          return resolve(res.receipt.result)
-        }
-
-        // Otherwise parse the json result
         const r = getXDRObject(resultFormat, xdrTypes)
         if (r === undefined) {
           return reject(Error('Type not identified: ' + resultFormat.type))
