@@ -195,7 +195,7 @@ class Client {
               return reject(new Error('Readonly status was bad: ' + res.status))
             }
             const resultFormat = abiEntry.outputs[0]
-            const r = getXDRObject(resultFormat, this.xdrTypes)
+            const r = getXDRObject(resultFormat)
             if (r === undefined) {
               return reject(Error('Type not identified: ' + resultFormat))
             }
@@ -212,7 +212,7 @@ class Client {
  * Returns an XDR type based on the type defined in the abiJson.
  *
  * @param output The string defined in abijson for the contract type.
- * @param xdrTypes The custom xdr types for the contract
+ * @param output The string defined in abijson for the contract type.
  *
  * @return XDR type for the specified type.
 */
