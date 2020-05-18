@@ -212,7 +212,7 @@ class Client {
  * Returns an XDR type based on the type defined in the abiJson.
  *
  * @param output The string defined in abijson for the contract type.
- * @param output The string defined in abijson for the contract type.
+ * @param xdrTypes The custom xdr types for the contract
  *
  * @return XDR type for the specified type.
 */
