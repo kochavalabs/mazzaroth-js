@@ -189,7 +189,7 @@ class Client {
               return reject(new Error('Readonly status was bad: ' + res.status))
             }
             const resultFormat = abiEntry.outputs[0]
-            const r = getXDRObject(resultFormat)
+            const r = getXDRObject(resultFormat, this.xdrTypes)
             if (r === undefined) {
               return reject(Error('Type not identified: ' + resultFormat.type))
             }
