@@ -114,6 +114,42 @@ const testAbi = JSON.parse(`
         "codec": "bytes"
       }
     ]
+  },
+  {
+    "type": "function",
+    "name": "custom_return",
+    "inputs": [
+      {
+        "name": "my_type",
+        "type": "MyType",
+        "codec": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "returnValue0",
+        "type": "MyType",
+        "codec": "bytes"
+      }
+    ]
+  },
+  {
+    "type": "readonly",
+    "name": "custom_readonly",
+    "inputs": [
+      {
+        "name": "my_type",
+        "type": "MyType",
+        "codec": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "returnValue0",
+        "type": "MyType",
+        "codec": "bytes"
+      }
+    ]
   }
 ]
 `)
@@ -254,15 +290,6 @@ describe('contract calls', () => {
 
   it('transaction submit success', () => {
     const nodeClient = getMockClient(stringResult)
-    nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
-      const respXdr = types.TransactionSubmitResponse()
-      respXdr.fromJSON({
-        transactionID: x256,
-        status: 1,
-        statusInfo: 'status was good.'
-      })
-      resolve(respXdr)
-    }))
     const client = new ContractClient(testAbi, nodeClient, {})
     return client.sign_message('one', 'two').then(res => {
       expect(nodeClient.transactionSubmit.calledWith({
@@ -280,47 +307,29 @@ describe('contract calls', () => {
     })
   })
 
-  it('transaction submit custom type string', () => {
-    const nodeClient = getMockClient()
-    nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
-      const respXdr = types.TransactionSubmitResponse()
-      respXdr.fromJSON({
-        transactionID: x256,
-        status: 1,
-        statusInfo: 'status was good.'
-      })
-      resolve(respXdr)
-    }))
-    const client = new ContractClient(testAbi, nodeClient, customXDR)
+  it('transaction submit custom type return', () => {
     const arg = customXDR.MyType()
+    const nodeClient = getMockClient(arg.toXDR('base64'))
+    const client = new ContractClient(testAbi, nodeClient, customXDR)
 
-    return client.custom_type(JSON.stringify(arg.toJSON())).then(res => {
+    return client.custom_return(arg.toJSON()).then(res => {
       expect(nodeClient.transactionSubmit.calledWith({
         channelID: '0'.repeat(64),
         nonce: '3',
         category: {
           enum: 1,
           value: {
-            function: 'custom_type',
+            function: 'custom_return',
             parameters: [ arg.toXDR('base64') ]
           }
         }
       })).to.equal(true)
-      expect(res).to.deep.equal([1, 2, 3])
+      expect(res).to.deep.equal(arg.toJSON())
     })
   })
 
-  it('transaction submit custom type dict', () => {
+  it('transaction submit custom type arg', () => {
     const nodeClient = getMockClient()
-    nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
-      const respXdr = types.TransactionSubmitResponse()
-      respXdr.fromJSON({
-        transactionID: x256,
-        status: 1,
-        statusInfo: 'status was good.'
-      })
-      resolve(respXdr)
-    }))
     const client = new ContractClient(testAbi, nodeClient, customXDR)
     const arg = customXDR.MyType()
 
@@ -416,37 +425,6 @@ describe('readonly calls', () => {
     const client = new ContractClient(testAbi, nodeClient, customXDR)
     return client.custom_readonly(arg.toJSON()).then((res) => {
       expect(res).to.deep.equal(arg.toJSON())
-    })
-  })
-})
-
-describe('getXDRObject', () => {
-  const runs = [
-    { desc: 'bool', input: 'bool', expected: new xdrTypes.Bool() },
-    { desc: 'int32', input: 'int32', expected: new xdrTypes.Int() },
-    { desc: 'uint32', input: 'uint32', expected: new xdrTypes.UInt() },
-    { desc: 'int64', input: 'int64', expected: new xdrTypes.Hyper() },
-    { desc: 'uint64', input: 'uint64', expected: new xdrTypes.UHyper() },
-    { desc: 'f32', input: 'f32', expected: new xdrTypes.Float() },
-    { desc: 'f64', input: 'f64', expected: new xdrTypes.Double() },
-    { desc: 'string', input: 'string', expected: new xdrTypes.Str() },
-    { desc: 'bytes', input: 'bytes', expected: new xdrTypes.VarOpaque() },
-    {
-      desc: 'array',
-      input: 'bool[]',
-      expected: new xdrTypes.VarArray(Math.pow(2, 32) - 1, () => { return new types.Bool() })
-    },
-    { desc: 'custom', input: 'MyType', expected: customXDR.MyType() },
-    {
-      desc: 'custom type',
-      input: 'MyType[]',
-      expected: new xdrTypes.VarArray(Math.pow(2, 32) - 1, () => { return new customXDR.MyType() })
-    }
-  ]
-  runs.forEach(function (run) {
-    it(`Build Receipt Subscription: ${run.desc}`, () => {
-      const result = getXDRObject({ type: run.input }, customXDR)
-      expect(result.toJSON()).to.deep.equal(run.expected.toJSON())
     })
   })
 })
