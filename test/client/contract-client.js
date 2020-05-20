@@ -114,6 +114,42 @@ const testAbi = JSON.parse(`
         "codec": "bytes"
       }
     ]
+  },
+  {
+    "type": "function",
+    "name": "custom_return",
+    "inputs": [
+      {
+        "name": "my_type",
+        "type": "MyType",
+        "codec": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "returnValue0",
+        "type": "MyType",
+        "codec": "bytes"
+      }
+    ]
+  },
+  {
+    "type": "readonly",
+    "name": "custom_readonly",
+    "inputs": [
+      {
+        "name": "my_type",
+        "type": "MyType",
+        "codec": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "returnValue0",
+        "type": "MyType",
+        "codec": "bytes"
+      }
+    ]
   }
 ]
 `)
@@ -254,15 +290,6 @@ describe('contract calls', () => {
 
   it('transaction submit success', () => {
     const nodeClient = getMockClient(stringResult)
-    nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
-      const respXdr = types.TransactionSubmitResponse()
-      respXdr.fromJSON({
-        transactionID: x256,
-        status: 1,
-        statusInfo: 'status was good.'
-      })
-      resolve(respXdr)
-    }))
     const client = new ContractClient(testAbi, nodeClient, {})
     return client.sign_message('one', 'two').then(res => {
       expect(nodeClient.transactionSubmit.calledWith({
@@ -280,47 +307,29 @@ describe('contract calls', () => {
     })
   })
 
-  it('transaction submit custom type string', () => {
-    const nodeClient = getMockClient()
-    nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
-      const respXdr = types.TransactionSubmitResponse()
-      respXdr.fromJSON({
-        transactionID: x256,
-        status: 1,
-        statusInfo: 'status was good.'
-      })
-      resolve(respXdr)
-    }))
-    const client = new ContractClient(testAbi, nodeClient, customXDR)
+  it('transaction submit custom type return', () => {
     const arg = customXDR.MyType()
+    const nodeClient = getMockClient(arg.toXDR('base64'))
+    const client = new ContractClient(testAbi, nodeClient, customXDR)
 
-    return client.custom_type(JSON.stringify(arg.toJSON())).then(res => {
+    return client.custom_return(arg.toJSON()).then(res => {
       expect(nodeClient.transactionSubmit.calledWith({
         channelID: '0'.repeat(64),
         nonce: '3',
         category: {
           enum: 1,
           value: {
-            function: 'custom_type',
+            function: 'custom_return',
             parameters: [ arg.toXDR('base64') ]
           }
         }
       })).to.equal(true)
-      expect(res).to.deep.equal([1, 2, 3])
+      expect(res).to.deep.equal(arg.toJSON())
     })
   })
 
-  it('transaction submit custom type dict', () => {
+  it('transaction submit custom type arg', () => {
     const nodeClient = getMockClient()
-    nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
-      const respXdr = types.TransactionSubmitResponse()
-      respXdr.fromJSON({
-        transactionID: x256,
-        status: 1,
-        statusInfo: 'status was good.'
-      })
-      resolve(respXdr)
-    }))
     const client = new ContractClient(testAbi, nodeClient, customXDR)
     const arg = customXDR.MyType()
 
@@ -394,6 +403,28 @@ describe('readonly calls', () => {
     const client = new ContractClient(testAbi, nodeClient)
     return client.validate_signature('asdf', 'qwer', 'zxcv').then((res) => {
       expect(res).to.equal('asdf')
+    })
+  })
+
+  it('good request/response custom types', () => {
+    const nodeClient = sinon.fake()
+    const arg = customXDR.MyType()
+    nodeClient.readonlySubmit = sinon.fake.returns(new Promise((resolve, reject) => {
+      const respXdr = types.ReadonlyResponse()
+      respXdr.fromJSON({
+        result: arg.toXDR('base64'),
+        stateStatus: {
+          previousBlock: '3',
+          transactionCount: '1'
+        },
+        status: 1,
+        statusInfo: 'status was good.'
+      })
+      resolve(respXdr)
+    }))
+    const client = new ContractClient(testAbi, nodeClient, customXDR)
+    return client.custom_readonly(arg.toJSON()).then((res) => {
+      expect(res).to.deep.equal(arg.toJSON())
     })
   })
 })
