@@ -13,10 +13,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Update npm
-          command: 'sudo npm install -g npm@latest'
-      - restore_cache:
-          key: git-sha-{{ .Revision }}
+          name: install ci tools
+          command: 'mkdir -p ~/.build_tools/node && npm install --prefix ~/.build_tools/node kl-ci-tools'
       - run:
           name: update dependencies if releasing
           command: |
@@ -30,7 +28,7 @@ jobs:
           name: npm build
           command: npm run build
       - save_cache:
-          key: git-sha-{{ .Revision }}
+          key: git-sha-{{ .Revision }}{{ .Branch }}
           paths:
             - dist
             - package.json
@@ -42,7 +40,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: git-sha-{{ .Revision }}
+          key: git-sha-{{ .Revision }}{{ .Branch }}
       - run:
           name: lint
           command: npm run lint
@@ -55,7 +53,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: git-sha-{{ .Revision }}
+          key: git-sha-{{ .Revision }}{{ .Branch }}
       - run:
           name: set develop version
           command: git rev-parse develop | cut -c1-10 | xargs -I[] ~/.build_tools/node/node_modules/kl-ci-tools/dist/bin.js tag dev.[]
@@ -74,7 +72,7 @@ jobs:
           key: git-sha-{{ .Revision }}{{ .Branch }}
       - run:
           name: setup git config
-          command: git config user.email "dev@mazzaroth.io" && git config user.name "CircleCI" && git config --global core.editor "\usr\local\bin\subl -n -w"
+          command: git config user.email "dev@mazzaroth.io" && git config user.name "CricleCI" && git config --global core.editor "\usr\local\bin\subl -n -w"
       - run:
           name: update version
           command: echo $CIRCLE_BRANCH | sed 's:release/::' | xargs npm version --no-git-tag-version
@@ -91,13 +89,6 @@ jobs:
           name: authenticate with registry
           command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
       - run:
-          name: tag release
-          command: |
-            export GIT_TAG=$(echo $CIRCLE_BRANCH | sed 's:release/::')
-            git checkout master
-            git tag $GIT_TAG
-            git push origin $GIT_TAG
-      - run:
           name: publish package
           command: npm publish --tag latest
       - run:
@@ -112,7 +103,7 @@ jobs:
 
 workflows:
   version: 2.1
-  build_test_release:
+  build_and_test:
     jobs:
       - init
       - test:
