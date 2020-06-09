@@ -6,3 +6,4 @@ XchngContract.json
 src/types.js
 types/
 package-lock.json
+.npmrc
