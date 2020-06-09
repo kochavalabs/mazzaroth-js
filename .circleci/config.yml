@@ -89,6 +89,12 @@ jobs:
           name: authenticate with registry
           command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > .npmrc
       - run:
+          name: tag release
+          command: |
+            env GIT_TAG=$(echo $CIRCLE_BRANCH | sed 's:release/::')
+            git tag $GIT_TAG
+            git push --set-upstream origin $GIT_TAG
+      - run:
           name: publish package
           command: npm publish --tag latest
       - run:
