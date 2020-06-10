@@ -239,6 +239,15 @@ describe('JSONtoXDR', () => {
     expect(JSONtoXDR('{}', 'Transaction')).to.equal(expected.toXDR('base64'))
   })
 
+  it('basic deep convert', () => {
+    const input = '{"action": { "nonce": "3" } }'
+    const expected = types.Transaction()
+    const expectedJSON = expected.toJSON()
+    expectedJSON.action.nonce = '3'
+    expected.fromJSON(expectedJSON)
+    expect(JSONtoXDR(input, 'Transaction')).to.equal(expected.toXDR('base64'))
+  })
+
   it('complex type convert', () => {
     const json = types.Transaction().toJSON()
     json.action = {
