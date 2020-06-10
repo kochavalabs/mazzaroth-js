@@ -235,13 +235,13 @@ describe('JSONtoXDR', () => {
   })
 
   it('basic type convert', () => {
-    const expected = types.Transaction().toJSON()
-    expect(JSONtoXDR('{}', 'Transaction')).to.equal(JSON.stringify(expected))
+    const expected = types.Transaction()
+    expect(JSONtoXDR('{}', 'Transaction')).to.equal(expected.toXDR('base64'))
   })
 
   it('complex type convert', () => {
-    const expected = types.Transaction().toJSON()
-    expected.action = {
+    const json = types.Transaction().toJSON()
+    json.action = {
       address: x256,
       channelID: x256,
       nonce: '3',
@@ -256,12 +256,45 @@ describe('JSONtoXDR', () => {
         }
       }
     }
-    expect(JSONtoXDR(JSON.stringify(expected), 'Transaction')).to.equal(JSON.stringify(expected))
+    const expected = types.Transaction()
+    expected.fromJSON(json)
+    expect(JSONtoXDR(JSON.stringify(json), 'Transaction')).to.equal(expected.toXDR('base64'))
   })
 })
 
 describe('XDRtoJSON', () => {
   it('error for bad type', () => {
     expect(() => XDRtoJSON('', 'badtype')).to.throw()
+  })
+
+  it('error for bad format', () => {
+    expect(() => XDRtoJSON('', 'Transaction', 'badformat')).to.throw()
+  })
+
+  it('basic type convert default', () => {
+    const tx = types.Transaction()
+    expect(XDRtoJSON(tx.toXDR('base64'), 'Transaction')).to.equal(JSON.stringify(tx.toJSON()))
+  })
+
+  it('complex type convert default', () => {
+    const json = types.Transaction().toJSON()
+    json.action = {
+      address: x256,
+      channelID: x256,
+      nonce: '3',
+      category: {
+        enum: 2,
+        value: {
+          enum: 3,
+          value: {
+            key: x256,
+            action: 0
+          }
+        }
+      }
+    }
+    const input = types.Transaction()
+    input.fromJSON(json)
+    expect(XDRtoJSON(input.toXDR('base64'), 'Transaction')).to.equal(JSON.stringify(json))
   })
 })
