@@ -115,6 +115,36 @@ export function RunExecutionPlan (plan, privKey, progress, client) {
 }
 
 /**
+ * Translates a json string to a base64 XDR representation of the supplied data
+ * type. If the json string is not complete, the function will do its best to
+ * interpolate the json properties into a default XDR object.
+ *
+ * @param input string json string to convert to XDR
+ * @param type string xdr object from mazzaroth-xdr i.e. 'Transaction'
+ * @return string base64 representation of XDR binary
+*/
+export function JSONtoXDR (input, type) {
+  if (types[type] === undefined) {
+    throw new Error(`Could not identify type '${type}'`)
+  }
+}
+
+/**
+ * Translates an xdr string to a json string  XDR representation of the
+ * supplied data  type.
+ *
+ * @param input string xdr representation matching the arg format
+ * @param type string xdr object from mazzaroth-xdr i.e. 'Transaction'
+ * @param format data string format base64/hex
+ * @return string json string representation of XDR object
+*/
+export function XDRtoJSON (input, type, format) {
+  if (types[type] === undefined) {
+    throw new Error(`Could not identify type '${type}'`)
+  }
+}
+
+/**
  * Translates a simpler javascript object to the proper xdr object necessary to
  * subscribe to receipts on a Mazzaroth readonly Node. Format:
  *
