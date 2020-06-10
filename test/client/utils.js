@@ -227,6 +227,37 @@ describe('JSONtoXDR', () => {
   it('error for bad type', () => {
     expect(() => JSONtoXDR('', 'badtype')).to.throw()
   })
+
+  it('throw bad property', () => {
+    const expected = types.Transaction().toJSON()
+    expected.badprop = 'asdf'
+    expect(() => JSONtoXDR(JSON.stringify(expected), 'Transaction')).to.throw()
+  })
+
+  it('basic type convert', () => {
+    const expected = types.Transaction().toJSON()
+    expect(JSONtoXDR('{}', 'Transaction')).to.equal(JSON.stringify(expected))
+  })
+
+  it('complex type convert', () => {
+    const expected = types.Transaction().toJSON()
+    expected.action = {
+      address: x256,
+      channelID: x256,
+      nonce: '3',
+      category: {
+        enum: 2,
+        value: {
+          enum: 3,
+          value: {
+            key: x256,
+            action: 0
+          }
+        }
+      }
+    }
+    expect(JSONtoXDR(JSON.stringify(expected), 'Transaction')).to.equal(JSON.stringify(expected))
+  })
 })
 
 describe('XDRtoJSON', () => {
