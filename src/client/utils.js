@@ -135,7 +135,7 @@ export function JSONtoXDR (input, type) {
     JSON.parse(input)
   )
   xdrObj.fromJSON(result)
-  return JSON.stringify(result)
+  return xdrObj.toXDR('base64')
 }
 
 /**
@@ -144,13 +144,19 @@ export function JSONtoXDR (input, type) {
  *
  * @param input string xdr representation matching the arg format
  * @param type string xdr object from mazzaroth-xdr i.e. 'Transaction'
- * @param format data string format base64/hex
+ * @param format data string format base64/hex defaults to base64
  * @return string json string representation of XDR object
 */
 export function XDRtoJSON (input, type, format) {
   if (types[type] === undefined) {
     throw new Error(`Could not identify type '${type}'`)
   }
+  format = format === undefined ? 'base64' : format
+  if (format !== 'base64' && format !== 'hex') {
+    throw new Error(`Invalid format '${format}'`)
+  }
+  const xdrObj = types[type]().fromXDR(input)
+  return JSON.stringify(xdrObj.toJSON())
 }
 
 /**
