@@ -130,11 +130,7 @@ export function JSONtoXDR (input, type) {
   }
   const xdrObj = types[type]()
   const xdrJSON = xdrObj.toJSON()
-  const result = Object.assign(
-    {},
-    xdrJSON,
-    JSON.parse(input)
-  )
+  const result = merge(xdrJSON, JSON.parse(input))
   xdrObj.fromJSON(result)
   return xdrObj.toXDR('base64')
 }
