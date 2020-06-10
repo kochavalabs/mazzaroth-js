@@ -41,6 +41,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "debug": "^4.1.1",
+    "deepmerge": "^4.2.2",
     "elliptic": "^6.4.1",
     "mazzaroth-xdr": "develop",
     "ws": "^7.2.5",
