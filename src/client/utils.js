@@ -127,6 +127,15 @@ export function JSONtoXDR (input, type) {
   if (types[type] === undefined) {
     throw new Error(`Could not identify type '${type}'`)
   }
+  const xdrObj = types[type]()
+  const xdrJSON = xdrObj.toJSON()
+  const result = Object.assign(
+    {},
+    xdrJSON,
+    JSON.parse(input)
+  )
+  xdrObj.fromJSON(result)
+  return JSON.stringify(result)
 }
 
 /**
