@@ -4,7 +4,7 @@ import { expect } from 'chai'
 import * as types from 'mazzaroth-xdr'
 import sinon from 'sinon'
 
-import { RunExecutionPlan, TransactionForResult, BuildReceiptSubscription } from '../../src/client/utils.js'
+import { RunExecutionPlan, TransactionForResult, BuildReceiptSubscription, JSONtoXDR, XDRtoJSON } from '../../src/client/utils.js'
 
 const x256 = '3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c'
 const stringResult = new xdrTypes.Str('asdf').toXDR('base64')
@@ -220,5 +220,17 @@ describe('BuildRceiptSubscription', () => {
       const result = BuildReceiptSubscription(run.input)
       expect(result.toJSON()).to.deep.equal(run.expected)
     })
+  })
+})
+
+describe('JSONtoXDR', () => {
+  it('error for bad type', () => {
+    expect(() => JSONtoXDR('', 'badtype')).to.throw()
+  })
+})
+
+describe('XDRtoJSON', () => {
+  it('error for bad type', () => {
+    expect(() => XDRtoJSON('', 'badtype')).to.throw()
   })
 })
