@@ -1,7 +1,7 @@
 import NodeClient from './client/node-client.js'
 import ContractClient from './client/contract-client.js'
 import { ReceiptSubscriptionResult } from 'mazzaroth-xdr'
-import { RunExecutionPlan, BuildReceiptSubscription } from './client/utils.js'
+import { RunExecutionPlan, BuildReceiptSubscription, XDRtoJSON, JSONtoXDR } from './client/utils.js'
 import { fromPrivate, generateKeys } from './crypto/ecc-ed25519.js'
 
 let Socket = null
@@ -33,4 +33,13 @@ function ReceiptSubscribe (host, subscriptionObject, onMessage) {
   }
 }
 
-export { NodeClient, ContractClient, AccountGenerate, RunExecutionPlan, AddressFromPrivate, ReceiptSubscribe }
+export {
+  NodeClient,
+  ContractClient,
+  AccountGenerate,
+  RunExecutionPlan,
+  AddressFromPrivate,
+  ReceiptSubscribe,
+  XDRtoJSON,
+  JSONtoXDR
+}
