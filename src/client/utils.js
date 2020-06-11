@@ -152,7 +152,7 @@ export function XDRtoJSON (input, type, format) {
   if (format !== 'base64' && format !== 'hex') {
     throw new Error(`Invalid format '${format}'`)
   }
-  const xdrObj = types[type]().fromXDR(input)
+  const xdrObj = types[type]().fromXDR(input, format)
   return JSON.stringify(xdrObj.toJSON())
 }
 
