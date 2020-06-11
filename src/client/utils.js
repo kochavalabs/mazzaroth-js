@@ -3,6 +3,7 @@
  *
 */
 import Debug from 'debug'
+import merge from 'deepmerge'
 import NodeClient from './node-client.js'
 import * as types from 'mazzaroth-xdr'
 
@@ -112,6 +113,47 @@ export function RunExecutionPlan (plan, privKey, progress, client) {
     return res
   })
   return p
+}
+
+/**
+ * Translates a json string to a base64 XDR representation of the supplied data
+ * type. If the json string is not complete, the function will do its best to
+ * interpolate the json properties into a default XDR object.
+ *
+ * @param input string json string to convert to XDR
+ * @param type string xdr object from mazzaroth-xdr i.e. 'Transaction'
+ * @return string base64 representation of XDR binary
+*/
+export function JSONtoXDR (input, type) {
+  if (types[type] === undefined) {
+    throw new Error(`Could not identify type '${type}'`)
+  }
+  const xdrObj = types[type]()
+  const xdrJSON = xdrObj.toJSON()
+  const result = merge(xdrJSON, JSON.parse(input))
+  xdrObj.fromJSON(result)
+  return xdrObj.toXDR('base64')
+}
+
+/**
+ * Translates an xdr string to a json string  XDR representation of the
+ * supplied data  type.
+ *
+ * @param input string xdr representation matching the arg format
+ * @param type string xdr object from mazzaroth-xdr i.e. 'Transaction'
+ * @param format data string format base64/hex defaults to base64
+ * @return string json string representation of XDR object
+*/
+export function XDRtoJSON (input, type, format) {
+  if (types[type] === undefined) {
+    throw new Error(`Could not identify type '${type}'`)
+  }
+  format = format === undefined ? 'base64' : format
+  if (format !== 'base64' && format !== 'hex') {
+    throw new Error(`Invalid format '${format}'`)
+  }
+  const xdrObj = types[type]().fromXDR(input, format)
+  return JSON.stringify(xdrObj.toJSON())
 }
 
 /**
