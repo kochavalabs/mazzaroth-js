@@ -285,6 +285,11 @@ describe('XDRtoJSON', () => {
     expect(XDRtoJSON(tx.toXDR('base64'), 'Transaction')).to.equal(JSON.stringify(tx.toJSON()))
   })
 
+  it('basic type convert hex', () => {
+    const tx = types.Transaction()
+    expect(XDRtoJSON(tx.toXDR('hex'), 'Transaction', 'hex')).to.equal(JSON.stringify(tx.toJSON()))
+  })
+
   it('complex type convert default', () => {
     const json = types.Transaction().toJSON()
     json.action = {
