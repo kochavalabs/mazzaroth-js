@@ -1,6 +1,6 @@
 {
   "name": "mazzaroth-js",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Library that facilitates interaction with Mazzaroth nodes from both the browser and node-js",
   "main": "dist/index.js",
   "files": [
@@ -43,8 +43,8 @@
     "debug": "^4.1.1",
     "deepmerge": "^4.2.2",
     "elliptic": "^6.4.1",
-    "mazzaroth-xdr": "develop",
+    "mazzaroth-xdr": "^0.2.2",
     "ws": "^7.2.5",
-    "xdr-js-serialize": "develop"
+    "xdr-js-serialize": "^0.2.0"
   }
 }
