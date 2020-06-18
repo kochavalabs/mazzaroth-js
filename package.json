@@ -9,7 +9,7 @@
   "scripts": {
     "build": "npm run lint && babel src -d dist",
     "test": "npm run lint && ./node_modules/.bin/mocha --require babel-register \"test/**/*.js\"",
-    "lint": "./node_modules/.bin/eslint ."
+    "lint": "./node_modules/.bin/eslint . && ./node_modules/markdownlint-cli/markdownlint.js README.md"
   },
   "repository": {
     "type": "git",
@@ -33,6 +33,7 @@
     "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
+    "markdownlint-cli": "^0.23.1",
     "mocha": "^6.0.2",
     "nock": "^10.0.6",
     "package-tagger": "^0.1.1",
