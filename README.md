@@ -1,4 +1,5 @@
 # Mazzaroth-js
+
 [![CircleCI](https://circleci.com/gh/kochavalabs/mazzaroth-js.svg?style=svg)](https://circleci.com/gh/kochavalabs/mazzaroth-js)
 
 Mazzaroth-js is a javascript library that facilitates the interaction with
