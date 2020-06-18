@@ -42,11 +42,8 @@ jobs:
       - restore_cache:
           key: git-sha-{{ .Revision }}{{ .Branch }}
       - run:
-          name: lint js
+          name: lint
           command: npm run lint
-      - run:
-          name: lint markdown
-          command: ./node_modules/markdownlint-cli/markdownlint.js README.md
       - run:
           name: test
           command: npm test

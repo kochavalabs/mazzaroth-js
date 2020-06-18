@@ -9,7 +9,7 @@
   "scripts": {
     "build": "npm run lint && babel src -d dist",
     "test": "npm run lint && ./node_modules/.bin/mocha --require babel-register \"test/**/*.js\"",
-    "lint": "./node_modules/.bin/eslint ."
+    "lint": "./node_modules/.bin/eslint . && ./node_modules/markdownlint-cli/markdownlint.js README.md"
   },
   "repository": {
     "type": "git",
