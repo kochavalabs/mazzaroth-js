@@ -4,6 +4,37 @@
 
 Mazzaroth-js is a javascript library that facilitates the interaction with
 Mazzaroth nodes from both the browser or from [node-js](https://nodejs.org/en/).
+It does this by exporting two clients and some utility functions.
+
+## Node Client
+
+The node client is used to interact with a Mazzaroth node by abstracting some
+of the standard node operations. This includes encapsulating the node HTTP
+endpoints, signing operations, and the creation of a properly formed HTTP
+body. The following functions are exposed:
+
+### transactionSubmit
+
+Submits a write transaction to a Mazzaroth node. These are transactions
+that must be signed and will eventually be sent to the backing census
+pool to be submitted to the blockchain. This includes transactions that
+update channel state including contract updates and authorization
+transactions. Write transactions are submitted asynchronously and the
+results must be looked up by querying the Receipt for the transaction.
+
+### readonlySubmit
+
+Submits a read-only transaction to a Mazzaroth node. Read-only transactions
+do not update channel state so they will return a result immediately
+without hitting the consensus pool.
+
+### Lookups
+
+There are several functions that allow you to lookup various information. These
+include transactionLookup, blockLookup, blockHeaderLookup, receiptLookup,
+nonceLookup, accountInfoLookup and channelInfoLookup. Lookup functions are
+synchronous read-only requests hat will get the latest state based on the
+non-consensus node that this lookup hits.
 
 ## Installation
 
@@ -32,7 +63,7 @@ const channelID = '0'.repeat(64)
 
 const client = new NodeClient(mazzNodeAddr, accountPrivKey)
 
-// Lookup tne nonce for the account 1x64
+// Lookup the nonce for the account 1x64
 client.nonceLookup('1'.repeat(64)).then(res => {
   console.log(res.toJSON())
   /**
@@ -92,7 +123,3 @@ client.receiptLookup(receiptID).then(res => {
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
-## Notes
-
-- The XDR Quad type is currently not supported
