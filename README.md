@@ -36,6 +36,22 @@ nonceLookup, accountInfoLookup and channelInfoLookup. Lookup functions are
 synchronous read-only requests hat will get the latest state based on the
 non-consensus node that this lookup hits.
 
+## Contract Client
+
+The contract client provides further abstraction for interaction with Mazzaroth
+nodes on top of the node client. The idea is to build an object that you can
+call contract functions on abstracting the details of the blockchain. A
+contract client is constructed using an abiJSON, nodeClient, and any custom
+XDR types defined for the contract. It will then dynamically build the functions
+exposed by the contract and allow you to call as simple async functions.
+
+## Utility Functions
+
+There are also some utility functions exported to help with common operations.
+This includes [EventSubscription](https://mazzaroth.io/docs/4-Event_Subscription/3-Tools.md),
+running [ExecutionPlans](https://github.com/kochavalabs/mazzaroth-xdr/blob/master/idl/plan.x)
+, getting an address from a private key and XDR<->JSON conversion helpers.
+
 ## Installation
 
 This library can be added to your project by using npm to install the
@@ -121,5 +137,49 @@ client.receiptLookup(receiptID).then(res => {
 ```
 
 ### Contract-Client
+
+```js
+import { NodeClient, ContractClient } from 'mazzaroth-js'
+
+// First construct a node client to be used by the contract client.
+// Private key for the account is 3x64
+const accountPrivKey = '3'.repeat(64)
+const mazzNodeAddr = 'http://localhost:8081'
+const channelID = '0'.repeat(64)
+
+const nodeClient = new NodeClient(mazzNodeAddr, accountPrivKey)
+
+// This is an example abi.
+const helloAbi = JSON.parse(`
+[
+  {
+    "type": "function",
+    "name": "hello_world",
+    "inputs": [
+      {
+        "name": "my_name",
+        "type": "string",
+        "codec": "bytes"
+      },
+    ],
+    "outputs": [
+      {
+        "name": "returnValue0",
+        "type": "string",
+        "codec": "bytes"
+      }
+    ]
+  },
+]
+`)
+
+// Contruct a contract client and then call the contract functions.
+// Third argument is empty because we have no xdr types for this contract.
+const contractClient = new ContractClient(helloAbi, nodeClient, {}, channelID)
+
+contractClient.hello_world('Mazzaroth Dev').then(result => console.log(result))
+```
+
+## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
