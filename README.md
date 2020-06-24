@@ -16,7 +16,7 @@ body. The following functions are exposed:
 ### transactionSubmit
 
 Submits a write transaction to a Mazzaroth node. These are transactions
-that must be signed and will eventually be sent to the backing census
+that must be signed and will eventually be sent to the backing consensus
 pool to be submitted to the blockchain. This includes transactions that
 update channel state including contract updates and authorization
 transactions. Write transactions are submitted asynchronously and the
@@ -33,7 +33,7 @@ without hitting the consensus pool.
 There are several functions that allow you to lookup various information. These
 include transactionLookup, blockLookup, blockHeaderLookup, receiptLookup,
 nonceLookup, accountInfoLookup and channelInfoLookup. Lookup functions are
-synchronous read-only requests hat will get the latest state based on the
+synchronous read-only requests that will get the latest state based on the
 non-consensus node that this lookup hits.
 
 ## Contract Client
@@ -173,7 +173,7 @@ const helloAbi = JSON.parse(`
 ]
 `)
 
-// Contruct a contract client and then call the contract functions.
+// Construct a contract client and then call the contract functions.
 // Third argument is empty because we have no xdr types for this contract.
 const contractClient = new ContractClient(helloAbi, nodeClient, {}, channelID)
 
