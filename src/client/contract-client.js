@@ -91,9 +91,14 @@ class Client {
             const params = []
             for (let i = 0; i < args.length; i++) {
               const type = abiEntry.inputs[i].type
-              const p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
               let arg = args[i]
-              if (this.xdrTypes[type] !== undefined) {
+              if (type === 'string' || type === 'uint64' || type === 'int64') {
+                params.push(arg)
+              } else if (this.xdrTypes[type] !== undefined) {
+                const p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
+                if (p === undefined) {
+                  return reject(Error('Type not identified: ' + type))
+                }
                 if (typeof arg === 'object') {
                   arg = processObjectArg(arg)
                   if (arg instanceof Error) {
@@ -103,12 +108,9 @@ class Client {
                 if (typeof arg === 'string') {
                   arg = JSON.parse(arg)
                 }
+                p.fromJSON(arg)
+                params.push(JSON.stringify(p.toJSON()))
               }
-              if (p === undefined) {
-                return reject(Error('Type not identified: ' + type))
-              }
-              p.fromJSON(arg)
-              params.push(p.toXDR('base64'))
             }
             const action = {
               channelID: this.channelID,
@@ -165,8 +167,13 @@ class Client {
           for (let i = 0; i < args.length; i++) {
             const type = abiEntry.inputs[i].type
             let arg = args[i]
-            let p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
-            if (this.xdrTypes[type] !== undefined) {
+            if (type === 'string' || type === 'uint64' || type === 'int64') {
+              params.push(arg)
+            } else if (this.xdrTypes[type] !== undefined) {
+              const p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
+              if (p === undefined) {
+                return reject(Error('Type not identified: ' + type))
+              }
               if (typeof arg === 'object') {
                 arg = processObjectArg(arg)
                 if (arg instanceof Error) {
@@ -176,12 +183,9 @@ class Client {
               if (typeof arg === 'string') {
                 arg = JSON.parse(arg)
               }
+              p.fromJSON(arg)
+              params.push(p.toJSON('base64'))
             }
-            if (p === undefined) {
-              return reject(Error('Type not identified: ' + type))
-            }
-            p.fromJSON(arg)
-            params.push(p.toXDR('base64'))
           }
 
           const call = {
@@ -195,12 +199,19 @@ class Client {
               return reject(new Error('Readonly status was bad: ' + res.status))
             }
             const resultFormat = abiEntry.outputs[0]
+            // If the return is not a special type, just resolve the result
+            if (resultFormat.type === 'string' || resultFormat.type === 'uint64' || resultFormat.type === 'int64') {
+              return resolve(res.result)
+            }
+
+            // Otherwise parse the json result
             const r = getXDRObject(resultFormat, this.xdrTypes)
             if (r === undefined) {
-              return reject(Error('Type not identified: ' + resultFormat))
+              return reject(Error('Type not identified: ' + resultFormat.type))
             }
-            r.fromXDR(res.result)
-            return resolve(r.toJSON())
+            const jsDict = JSON.parse(res.result)
+            r.fromJSON(jsDict)
+            return resolve(jsDict)
           })
         })
       }
@@ -271,12 +282,21 @@ function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrTypes, 
     }
     if (res.status === 1) {
       if (res.receipt.status === 1) {
+        // If the return is not a special type, just resolve the result
+        console.log(res)
+        console.log(resultFormat)
+        if (resultFormat.type === 'string' || resultFormat.type === 'uint64' || resultFormat.type === 'int64') {
+          return resolve(res.receipt.result)
+        }
+
+        // Otherwise parse the json result
         const r = getXDRObject(resultFormat, xdrTypes)
         if (r === undefined) {
-          return reject(Error('Type not identified: ' + resultFormat))
+          return reject(Error('Type not identified: ' + resultFormat.type))
         }
-        r.fromXDR(res.receipt.result)
-        return resolve(r.toJSON())
+        const jsDict = JSON.parse(res.receipt.result)
+        r.fromJSON(jsDict)
+        return resolve(jsDict)
       } else {
         return reject(new Error('Receipt status is FAILURE'))
       }
