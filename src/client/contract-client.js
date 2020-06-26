@@ -283,8 +283,6 @@ function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrTypes, 
     if (res.status === 1) {
       if (res.receipt.status === 1) {
         // If the return is not a special type, just resolve the result
-        console.log(res)
-        console.log(resultFormat)
         if (resultFormat.type === 'string' || resultFormat.type === 'uint64' || resultFormat.type === 'int64') {
           return resolve(res.receipt.result)
         }
