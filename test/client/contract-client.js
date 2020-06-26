@@ -9,10 +9,6 @@ import ContractClient, { getXDRObject } from '../../src/client/contract-client.j
 import NodeClient from '../../src/client/node-client.js'
 
 const x256 = '3a547668e859fb7b112a1e2dd7efcb739176ab8cfd1d9f224847fce362ebd99c'
-const stringResult = new xdrTypes.Str('asdf').toXDR('base64')
-const intArray = new xdrTypes.VarArray(2147483647, () => new xdrTypes.Int())
-intArray.fromJSON([1, 2, 3])
-const intArrayResult = intArray.toXDR('base64')
 
 const guardError = new Error('Guard!')
 const guard = () => {
@@ -156,7 +152,7 @@ const testAbi = JSON.parse(`
 
 function getMockClient (receiptResult) {
   const client = sinon.fake()
-  receiptResult = receiptResult || intArrayResult
+  receiptResult = receiptResult || '[1, 2, 3]'
   client.nonceLookup = sinon.fake.returns(new Promise((resolve, reject) => {
     const respXdr = types.AccountNonceLookupResponse()
     respXdr.fromJSON({
@@ -289,7 +285,7 @@ describe('contract calls', () => {
   })
 
   it('transaction submit success', () => {
-    const nodeClient = getMockClient(stringResult)
+    const nodeClient = getMockClient('asdf')
     const client = new ContractClient(testAbi, nodeClient, {})
     return client.sign_message('one', 'two').then(res => {
       expect(nodeClient.transactionSubmit.calledWith({
@@ -299,7 +295,7 @@ describe('contract calls', () => {
           enum: 1,
           value: {
             function: 'sign_message',
-            parameters: [ 'AAAAA29uZQA=', 'AAAAA3R3bwA=' ]
+            parameters: [ 'one', 'two' ]
           }
         }
       })).to.equal(true)
@@ -309,7 +305,7 @@ describe('contract calls', () => {
 
   it('transaction submit custom type return', () => {
     const arg = customXDR.MyType()
-    const nodeClient = getMockClient(arg.toXDR('base64'))
+    const nodeClient = getMockClient(JSON.stringify(arg.toJSON()))
     const client = new ContractClient(testAbi, nodeClient, customXDR)
 
     return client.custom_return(arg.toJSON()).then(res => {
@@ -320,7 +316,7 @@ describe('contract calls', () => {
           enum: 1,
           value: {
             function: 'custom_return',
-            parameters: [ arg.toXDR('base64') ]
+            parameters: [ JSON.stringify(arg.toJSON()) ]
           }
         }
       })).to.equal(true)
@@ -341,7 +337,7 @@ describe('contract calls', () => {
           enum: 1,
           value: {
             function: 'custom_type',
-            parameters: [ arg.toXDR('base64') ]
+            parameters: [ JSON.stringify(arg.toJSON()) ]
           }
         }
       })).to.equal(true)
@@ -369,7 +365,7 @@ describe('readonly calls', () => {
     nodeClient.readonlySubmit = sinon.fake.returns(new Promise((resolve, reject) => {
       const respXdr = types.ReadonlyResponse()
       respXdr.fromJSON({
-        result: stringResult,
+        result: 'asdf',
         stateStatus: {
           previousBlock: '3',
           transactionCount: '1'
@@ -390,7 +386,7 @@ describe('readonly calls', () => {
     nodeClient.readonlySubmit = sinon.fake.returns(new Promise((resolve, reject) => {
       const respXdr = types.ReadonlyResponse()
       respXdr.fromJSON({
-        result: stringResult,
+        result: 'asdf',
         stateStatus: {
           previousBlock: '3',
           transactionCount: '1'
@@ -412,7 +408,7 @@ describe('readonly calls', () => {
     nodeClient.readonlySubmit = sinon.fake.returns(new Promise((resolve, reject) => {
       const respXdr = types.ReadonlyResponse()
       respXdr.fromJSON({
-        result: arg.toXDR('base64'),
+        result: JSON.stringify(arg.toJSON()),
         stateStatus: {
           previousBlock: '3',
           transactionCount: '1'
