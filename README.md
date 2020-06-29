@@ -90,8 +90,8 @@ client.nonceLookup('1'.repeat(64)).then(res => {
   **/
 })
 
-// Make a contract function call. To the contract function 'hello' which takes
-// no parameters.
+// Make a contract function call. To the contract function 'args' which takes
+// three strings parameters
 const action = {
   channelID: channelID,
   nonce: '0',
@@ -101,10 +101,10 @@ const action = {
   category: {
     enum: 1,
     value: {
-      function: 'hello',
-      // Parameters are passed here using base64 XDR representations
-      // for a smoother experience using json, try the contract-client
-      parameters: []
+      function: 'args',
+      // Parameters are a variable length string xdr representation. They should
+      // be formatted to JSON if sending a complex struct
+      parameters: ["one", "two", "three"]
     }
   }
 }
@@ -128,7 +128,7 @@ client.receiptLookup(receiptID).then(res => {
          stateRoot:
           'e9f60907387ecb51140fe22451736c69a6b83c5f7d42806f9e09f2e5452ebd0e',
          events: [],
-         result: 'AAAADg==' },
+         result: '11' },
       stateStatus: { previousBlock: '0', transactionCount: '2' },
       status: 1,
       statusInfo: 'Transaction has been accepted and is being executed.' }
