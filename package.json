@@ -1,6 +1,6 @@
 {
   "name": "mazzaroth-js",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Library that facilitates interaction with Mazzaroth nodes from both the browser and node-js",
   "main": "dist/index.js",
   "files": [
