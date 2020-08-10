@@ -301,14 +301,16 @@ class Client {
    * Gets the account info for an account. Uses the public key created during
    * construction of the Client.
    *
+   * @param acct Hex string for the address (public key) of the account info to
+   *             look up.
+   *
    * @return Promise that on success provides an XDR AccountInfoLookupResponse
   */
-  accountInfoLookup () {
+  accountInfoLookup (acct) {
     debug('Looking up info for account: %o', this.publicKey.toString('hex'))
     const infoLookupRequest = types.AccountInfoLookupRequest()
-    infoLookupRequest.fromJSON({
-      account: this.publicKey.toString('hex')
-    })
+    const account = acct === undefined ? this.publicKey.toString('hex') : acct
+    infoLookupRequest.fromJSON({ account })
     const body = infoLookupRequest.toXDR('base64')
     return axios
       .post(this.host + this.accountInfoLookupRoute, body)
