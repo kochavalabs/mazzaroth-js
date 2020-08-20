@@ -175,9 +175,11 @@ class Client {
       const ws = new Socket(wsAddress)
       ws.onmessage = function (e) {
         const result = types.ReceiptSubscriptionResult()
+        const receipt = types.Receipt()
         result.fromXDR(e.data, 'base64')
+        receipt.fromJSON(result.toJSON().receipt)
         ws.close()
-        resolve(result.toJSON().receipt)
+        resolve(receipt)
       }
       ws.onopen = function () {
         const subscription = BuildReceiptSubscription({ transactionFilter: { address: action.address, nonce: action.nonce } })

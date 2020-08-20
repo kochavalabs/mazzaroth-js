@@ -166,30 +166,13 @@ function getMockClient (receiptResult) {
     })
     resolve(respXdr)
   }))
-  client.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
-    const respXdr = types.TransactionSubmitResponse()
+  client.transactionForReceipt = sinon.fake.returns(new Promise((resolve, reject) => {
+    const respXdr = types.Receipt()
     respXdr.fromJSON({
-      transactionID: x256,
       status: 1,
-      statusInfo: 'status was good.'
-    })
-    resolve(respXdr)
-  }))
-  client.receiptLookup = sinon.fake.returns(new Promise((resolve, reject) => {
-    const respXdr = types.ReceiptLookupResponse()
-    respXdr.fromJSON({
-      receipt: {
-        status: 1,
-        stateRoot: x256,
-        result: receiptResult,
-        statusInfo: 'status was better.'
-      },
-      stateStatus: {
-        previousBlock: '3',
-        transactionCount: '1'
-      },
-      status: 1,
-      statusInfo: 'status was good.'
+      stateRoot: x256,
+      result: receiptResult,
+      statusInfo: 'status was better.'
     })
     resolve(respXdr)
   }))
@@ -256,7 +239,7 @@ describe('contract calls', () => {
   it('transaction submit error surfaced', () => {
     const nodeClient = getMockClient()
     const retErr = new Error('bad')
-    nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
+    nodeClient.transactionForReceipt = sinon.fake.returns(new Promise((resolve, reject) => {
       reject(retErr)
     }))
     const client = new ContractClient(testAbi, nodeClient, {})
@@ -267,21 +250,19 @@ describe('contract calls', () => {
 
   it('transaction submit status checked', () => {
     const nodeClient = getMockClient()
-    nodeClient.transactionSubmit = sinon.fake.returns(new Promise((resolve, reject) => {
-      const respXdr = types.TransactionSubmitResponse({
-        transactionID: x256,
-        stateStatus: {
-          previousBlock: '3',
-          transactionCount: '1'
-        },
-        status: 2,
-        statusInfo: 'status was good.'
+    nodeClient.transactionForReceipt = sinon.fake.returns(new Promise((resolve, reject) => {
+      const respXdr = types.Receipt()
+      respXdr.fromJSON({
+        status: 0,
+        stateRoot: x256,
+        result: '',
+        statusInfo: 'status was better.'
       })
       resolve(respXdr)
     }))
     const client = new ContractClient(testAbi, nodeClient, {})
     return client.sign_message('one', 'two').then(guard).catch(err => {
-      expect(err.toString()).to.equal('Error: Transaction submission not accepted.')
+      expect(err.toString()).to.equal('Error: Receipt had bad status: 0')
     })
   })
 
@@ -289,7 +270,7 @@ describe('contract calls', () => {
     const nodeClient = getMockClient('asdf')
     const client = new ContractClient(testAbi, nodeClient, {})
     return client.sign_message('one', 'two').then(res => {
-      expect(nodeClient.transactionSubmit.calledWith({
+      expect(nodeClient.transactionForReceipt.calledWith({
         channelID: '0'.repeat(64),
         nonce: '3',
         category: {
@@ -310,7 +291,7 @@ describe('contract calls', () => {
     const client = new ContractClient(testAbi, nodeClient, customXDR)
 
     return client.custom_return(arg.toJSON()).then(res => {
-      expect(nodeClient.transactionSubmit.calledWith({
+      expect(nodeClient.transactionForReceipt.calledWith({
         channelID: '0'.repeat(64),
         nonce: '3',
         category: {
@@ -331,7 +312,7 @@ describe('contract calls', () => {
     const arg = customXDR.MyType()
 
     return client.custom_type(arg.toJSON()).then(res => {
-      expect(nodeClient.transactionSubmit.calledWith({
+      expect(nodeClient.transactionForReceipt.calledWith({
         channelID: '0'.repeat(64),
         nonce: '3',
         category: {
