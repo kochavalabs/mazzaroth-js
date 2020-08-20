@@ -11,11 +11,20 @@
 import Debug from 'debug'
 import axios from 'axios'
 import { sign, fromPrivate } from '../crypto/ecc-ed25519.js'
+import { BuildReceiptSubscription } from '../client/utils.js'
 import * as types from 'mazzaroth-xdr'
 
 const debug = Debug('mazzaroth-js:node-client')
 
 const dPriv = '0'.repeat(64)
+
+// Declare socket in this way to help with compatibablity between node/browser
+let Socket = null
+if (typeof WebSocket === 'undefined') {
+  Socket = require('ws')
+} else {
+  Socket = WebSocket
+}
 
 /**
  * Helper function using a heuristic to determine if the ID being used for a
@@ -110,7 +119,7 @@ class Client {
    *
    * @return Promise that on success provides an XDR TransactionSubmitResponse
   */
-  transactionSubmit (action, onBehalfOf) {
+  async transactionSubmit (action, onBehalfOf) {
     debug('Sending transaction')
     debug('action: %o', action)
     debug('address: %o', this.publicKey.toString('hex'))
@@ -141,6 +150,44 @@ class Client {
   }
 
   /**
+   * transactionForReceipt is an abstraction on top of transactionSubmit. It
+   * automates looking up the receipt created by the result of the execution,
+   * opting to return a receipt rather than the TransactionSubmitResponse.
+   *
+   * @param action JavaScript dict to be converted into an XDR Action.
+   * @param onBehalfOf Public key for the account that this transaction is being
+   *                   sent on behalf of if transaction authorization is being
+   *                   used.
+   *
+   * @return Promise that on success provides an XDR Receipt
+  */
+  async transactionForReceipt (action, onBehalfOf, timeoutMs) {
+    const self = this
+    const timeout = timeoutMs || 3000
+    return new Promise((resolve, reject) => {
+      debug('Sending transaction for receipt')
+      debug('timeout ms: %o', timeout)
+      setTimeout(() => {
+        reject(Error('Timeout waiting for receipt'))
+      }, timeout)
+      const wsAddress = `ws://${this.host}/subscribe/receipt`
+      debug('wsAddress: %o', wsAddress)
+      const ws = new Socket(wsAddress)
+      ws.onmessage = function (e) {
+        const result = types.ReceiptSubscriptionResult()
+        result.fromXDR(e.data, 'base64')
+        ws.close()
+        resolve(result.toJSON().receipt)
+      }
+      ws.onopen = function () {
+        const subscription = BuildReceiptSubscription({ transactionFilter: { address: action.address, nonce: action.nonce } })
+        ws.send(subscription.toXDR('base64'))
+        self.transactionSubmit(action, onBehalfOf)
+      }
+    })
+  }
+
+  /**
    * Submits a read-only transaction to a Mazzaroth node. Read-only transactions
    * do not update channel state so they will return a result immediately
    * without hitting the consensus pool.
@@ -150,7 +197,7 @@ class Client {
    *
    * @return Promise that on success provides an XDR ReadonlyResponse
   */
-  readonlySubmit (call) {
+  async readonlySubmit (call) {
     debug('Sending read-only request')
     debug('call: %o', call)
     const req = types.ReadonlyRequest()
@@ -177,7 +224,7 @@ class Client {
    *
    * @return Promise that on success provides an XDR TransactionLookupResponse
   */
-  transactionLookup (txID) {
+  async transactionLookup (txID) {
     debug('Looking up transaction with: %o', txID)
     const req = types.TransactionLookupRequest()
     req.fromJSON({
@@ -203,7 +250,7 @@ class Client {
    *
    * @return Promise that on success provides an XDR BlockLookupResponse
   */
-  blockLookup (attribute) {
+  async blockLookup (attribute) {
     debug('Looking up block with: %o', attribute)
     const req = types.BlockLookupRequest()
     req.fromJSON({
@@ -229,7 +276,7 @@ class Client {
    *
    * @return Promise that on success provides an XDR BlockLookupResponse
   */
-  blockHeaderLookup (attribute) {
+  async blockHeaderLookup (attribute) {
     debug('Looking up block header with: %o', attribute)
     const req = types.BlockHeaderLookupRequest()
     req.fromJSON({
@@ -254,7 +301,7 @@ class Client {
    *
    * @return Promise that on success provides an XDR ReceiptLookupResponse
   */
-  receiptLookup (txID) {
+  async receiptLookup (txID) {
     debug('Looking up receipt for txID: %o', txID)
     const requestXdr = types.ReceiptLookupRequest()
     requestXdr.fromJSON({
@@ -281,7 +328,7 @@ class Client {
    *
    * @return Promise that on success provides an XDR AccountNonceLookupResponse
   */
-  nonceLookup (account) {
+  async nonceLookup (account) {
     const toLookup = account || this.publicKey.toString('hex')
     debug('Looking up nonce for account: %o', toLookup)
     const nonceLookupRequest = types.AccountNonceLookupRequest()
@@ -306,7 +353,7 @@ class Client {
    *
    * @return Promise that on success provides an XDR AccountInfoLookupResponse
   */
-  accountInfoLookup (acct) {
+  async accountInfoLookup (acct) {
     debug('Looking up info for account: %o', this.publicKey.toString('hex'))
     const infoLookupRequest = types.AccountInfoLookupRequest()
     const account = acct === undefined ? this.publicKey.toString('hex') : acct
@@ -330,7 +377,7 @@ class Client {
    *
    * @return Promise that on success provides an XDR ChannelInfoLookupResponse
   */
-  channelInfoLookup (infoType) {
+  async channelInfoLookup (infoType) {
     debug('Looking up info contract config.')
     const channelInfoLookup = types.ChannelInfoLookupRequest()
     channelInfoLookup.fromJSON({
