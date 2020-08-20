@@ -60,11 +60,11 @@ class Client {
    * Builds, dynamically defining for the contract-client, all the write
    * functions from the abiJson. These functions can be called on the contract
    * client as if they were normal functions and return promises that return
-   * the end result (after polling for a receipt) of a contract execution.
+   * the end result (after subscribing to a receipt) of a contract execution.
    * General process is:
    *
    * Lookup the account nonce -> translate the args to XDR calls -> send a
-   * transaction to the network -> poll for a receipt -> return the result.
+   * transaction to the network -> subscribe to receipt -> return the result.
    *
    * @param functions The extracted write functions from the abiJson.
    *
@@ -147,7 +147,7 @@ class Client {
    * Mazzaroth node specified in the node-client -> parse and return the
    * response.
    *
-   * transaction to the network -> poll for a receipt -> return the result.
+   * transaction to the network -> return the result.
    *
    * @param functions The extracted readonly functions from the abiJson.
    *
