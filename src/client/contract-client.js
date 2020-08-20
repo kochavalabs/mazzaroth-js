@@ -155,64 +155,60 @@ class Client {
   */
   _buildReadonlys (readonlys) {
     readonlys.forEach((abiEntry) => {
-      this[abiEntry.name] = function (...args) {
-        return new Promise((resolve, reject) => {
-          debug('Calling readonly function: %o', abiEntry.name)
-          debug('Call arguments: %o', args)
-          if (args.length !== abiEntry.inputs.length) {
-            return reject(new Error('Incorrect number of arguments.'))
-          }
-          const params = []
-          for (let i = 0; i < args.length; i++) {
-            const type = abiEntry.inputs[i].type
-            let arg = args[i]
-            if (type === 'string' || type === 'uint64' || type === 'int64') {
-              params.push(arg)
-            } else if (this.xdrTypes[type] !== undefined) {
-              const p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
-              if (p === undefined) {
-                return reject(Error('Type not identified: ' + type))
-              }
-              if (typeof arg === 'object') {
-                arg = processObjectArg(arg)
-                if (arg instanceof Error) {
-                  reject(arg)
-                }
-              }
-              if (typeof arg === 'string') {
-                arg = JSON.parse(arg)
-              }
-              p.fromJSON(arg)
-              params.push(p.toJSON('base64'))
+      this[abiEntry.name] = async function (...args) {
+        debug('Calling readonly function: %o', abiEntry.name)
+        debug('Call arguments: %o', args)
+        if (args.length !== abiEntry.inputs.length) {
+          throw new Error('Incorrect number of arguments.')
+        }
+        const params = []
+        for (let i = 0; i < args.length; i++) {
+          const type = abiEntry.inputs[i].type
+          let arg = args[i]
+          if (type === 'string' || type === 'uint64' || type === 'int64') {
+            params.push(arg)
+          } else if (this.xdrTypes[type] !== undefined) {
+            const p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
+            if (p === undefined) {
+              throw new Error('Type not identified: ' + type)
             }
+            if (typeof arg === 'object') {
+              arg = processObjectArg(arg)
+              if (arg instanceof Error) {
+                throw arg
+              }
+            }
+            if (typeof arg === 'string') {
+              arg = JSON.parse(arg)
+            }
+            p.fromJSON(arg)
+            params.push(p.toJSON('base64'))
           }
+        }
 
-          const call = {
-            function: abiEntry.name,
-            parameters: params
-          }
-          this.nodeClient.readonlySubmit(call).then(res => {
-            res = res.toJSON()
-            debug('Redonly submit response: %o', res)
-            if (res.status !== 1) {
-              return reject(new Error('Readonly status was bad: ' + res.status))
-            }
-            const resultFormat = abiEntry.outputs[0]
-            // If the return is not a special type, just resolve the result
-            if (resultFormat.type === 'string' || resultFormat.type === 'uint64' || resultFormat.type === 'int64') {
-              return resolve(res.result)
-            }
+        const call = {
+          function: abiEntry.name,
+          parameters: params
+        }
+        const res = await this.nodeClient.readonlySubmit(call).then(x => x.toJSON())
+        debug('Redonly submit response: %o', res)
+        if (res.status !== 1) {
+          throw new Error('Readonly status was bad: ' + res.status)
+        }
+        const resultFormat = abiEntry.outputs[0]
+        // If the return is not a special type, just resolve the result
+        if (resultFormat.type === 'string' || resultFormat.type === 'uint64' || resultFormat.type === 'int64') {
+          return res.result
+        }
 
-            // Otherwise parse the json result
-            const r = getXDRObject(resultFormat, this.xdrTypes)
-            if (r === undefined) {
-              return reject(Error('Type not identified: ' + resultFormat.type))
-            }
-            const jsDict = JSON.parse(res.result)
-            r.fromJSON(jsDict)
-            return resolve(jsDict)
-          })
-        })
+        // Otherwise parse the json result
+        const r = getXDRObject(resultFormat, this.xdrTypes)
+        if (r === undefined) {
+          throw new Error('Type not identified: ' + resultFormat.type)
+        }
+        const jsDict = JSON.parse(res.result)
+        r.fromJSON(jsDict)
+        return jsDict
       }
     })
   }
