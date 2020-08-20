@@ -90,6 +90,7 @@ class Client {
     debug('public key: %o', publicKey.toString('hex'))
     this.host = host || 'http://localhost:8081'
     this.host = this.host.replace(/\/+$/, '')
+    this.bareHost = this.host.replace(/^(https?|ftp):\/\//, '')
     this.publicKey = publicKey
     // Setup the routes for each of the node endpoints.
     this.transactionLookupRoute = '/transaction/lookup'
@@ -170,7 +171,7 @@ class Client {
       setTimeout(() => {
         reject(Error('Timeout waiting for receipt'))
       }, timeout)
-      const wsAddress = `ws://${this.host}/subscribe/receipt`
+      const wsAddress = `ws://${self.bareHost}/subscribe/receipt`
       debug('wsAddress: %o', wsAddress)
       const ws = new Socket(wsAddress)
       ws.onmessage = function (e) {
