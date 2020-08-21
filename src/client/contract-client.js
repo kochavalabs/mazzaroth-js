@@ -43,7 +43,7 @@ class Client {
     debug('ABI Json: %o', abiJson)
     debug('XDR Config: %o', xdrTypes)
     debug('Timeout %o', receiptTimeout)
-    this.receiptTimeout = receiptTimeout || 500
+    this.receiptTimeout = receiptTimeout || 3000
     this.channelID = channelID || '0'.repeat(64)
     this.onBehalfOf = onBehalfOf
     this.xdrTypes = xdrTypes || {}
