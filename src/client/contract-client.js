@@ -37,16 +37,13 @@ class Client {
    *                  called.
    * @param onBehalfOf Hex string, 64 chars, ID for the account being acted on
    *                   behalf of when using account authorization.
-   * @param lookupRetries Number of times to poll before returning a failure.
-   * @param lookupTimeout Ammount of time in ms to wait between requests.
+   * @param receiptTimeout Total amount of time to wait before giving up on receipt
   */
-  constructor (abiJson, nodeClient, xdrTypes, channelID, onBehalfOf, lookupRetries, lookupTimeout) {
+  constructor (abiJson, nodeClient, xdrTypes, channelID, onBehalfOf, receiptTimeout) {
     debug('ABI Json: %o', abiJson)
     debug('XDR Config: %o', xdrTypes)
-    debug('Retries %o', lookupRetries)
-    debug('Timeout %o', lookupTimeout)
-    this.lookupRetries = lookupRetries || 5
-    this.lookupTimeout = lookupTimeout || 500
+    debug('Timeout %o', receiptTimeout)
+    this.receiptTimeout = receiptTimeout || 3000
     this.channelID = channelID || '0'.repeat(64)
     this.onBehalfOf = onBehalfOf
     this.xdrTypes = xdrTypes || {}
@@ -63,11 +60,11 @@ class Client {
    * Builds, dynamically defining for the contract-client, all the write
    * functions from the abiJson. These functions can be called on the contract
    * client as if they were normal functions and return promises that return
-   * the end result (after polling for a receipt) of a contract execution.
+   * the end result (after subscribing to a receipt) of a contract execution.
    * General process is:
    *
    * Lookup the account nonce -> translate the args to XDR calls -> send a
-   * transaction to the network -> poll for a receipt -> return the result.
+   * transaction to the network -> subscribe to receipt -> return the result.
    *
    * @param functions The extracted write functions from the abiJson.
    *
@@ -75,65 +72,67 @@ class Client {
   */
   _buildFunctions (functions) {
     functions.forEach((abiEntry) => {
-      this[abiEntry.name] = function (...args) {
-        return new Promise((resolve, reject) => {
-          debug('Calling contract function: %o', abiEntry.name)
-          debug('Call arguments: %o', args)
-          if (args.length !== abiEntry.inputs.length) {
-            return reject(new Error('Incorrect number of arguments.'))
+      this[abiEntry.name] = async function (...args) {
+        debug('Calling contract function: %o', abiEntry.name)
+        debug('Call arguments: %o', args)
+        if (args.length !== abiEntry.inputs.length) {
+          throw new Error('Incorrect number of arguments.')
+        }
+        const nonceResult = await this.nodeClient.nonceLookup(this.onBehalfOf).then(x => x.toJSON())
+        debug('Nonce lookup returned with: %o', nonceResult)
+        if (nonceResult.status !== 1) {
+          throw new Error('Nonce lookup failed.')
+        }
+        const params = []
+        for (let i = 0; i < args.length; i++) {
+          const type = abiEntry.inputs[i].type
+          let arg = args[i]
+          if (type === 'string' || type === 'uint64' || type === 'int64') {
+            params.push(arg)
+          } else if (this.xdrTypes[type] !== undefined) {
+            const p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
+            if (p === undefined) {
+              throw new Error('Type not identified: ' + type)
+            }
+            if (typeof arg === 'object') {
+              arg = processObjectArg(arg)
+              if (arg instanceof Error) {
+                throw arg
+              }
+            }
+            if (typeof arg === 'string') {
+              arg = JSON.parse(arg)
+            }
+            p.fromJSON(arg)
+            params.push(JSON.stringify(p.toJSON()))
           }
-          this.nodeClient.nonceLookup(this.onBehalfOf).then(result => {
-            result = result.toJSON()
-            debug('Nonce lookup returned with: %o', result)
-            if (result.status !== 1) {
-              return reject(new Error('Nonce lookup failed.'))
+        }
+        const action = {
+          channelID: this.channelID,
+          nonce: nonceResult.nonce,
+          category: {
+            enum: 1,
+            value: {
+              function: abiEntry.name,
+              parameters: params
             }
-            const params = []
-            for (let i = 0; i < args.length; i++) {
-              const type = abiEntry.inputs[i].type
-              let arg = args[i]
-              if (type === 'string' || type === 'uint64' || type === 'int64') {
-                params.push(arg)
-              } else if (this.xdrTypes[type] !== undefined) {
-                const p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
-                if (p === undefined) {
-                  return reject(Error('Type not identified: ' + type))
-                }
-                if (typeof arg === 'object') {
-                  arg = processObjectArg(arg)
-                  if (arg instanceof Error) {
-                    reject(arg)
-                  }
-                }
-                if (typeof arg === 'string') {
-                  arg = JSON.parse(arg)
-                }
-                p.fromJSON(arg)
-                params.push(JSON.stringify(p.toJSON()))
-              }
-            }
-            const action = {
-              channelID: this.channelID,
-              nonce: result.nonce,
-              category: {
-                enum: 1,
-                value: {
-                  function: abiEntry.name,
-                  parameters: params
-                }
-              }
-            }
-            this.nodeClient.transactionSubmit(action, this.onBehalfOf).then(result => {
-              result = result.toJSON()
-              debug('Transaction submit returned with: %o', result)
-              if (result.status !== 1) {
-                return reject(new Error('Transaction submission not accepted.'))
-              }
-              const txID = result.transactionID
-              pollResult(txID, resolve, reject, this.nodeClient, abiEntry.outputs[0], this.xdrTypes, this.lookupRetries, this.lookupTimeout)
-            }).catch(err => reject(err))
-          }).catch(err => reject(err))
-        })
+          }
+        }
+        const receipt = await this.nodeClient.transactionForReceipt(action, this.onBehalfOf, this.receiptTimeout).then(x => x.toJSON())
+        const returnType = abiEntry.outputs[0].type
+        if (receipt.status !== 1) {
+          throw new Error('Receipt had bad status: ' + receipt.status)
+        }
+        if (returnType === 'string' || returnType === 'uint64' || returnType === 'int64') {
+          return receipt.result
+        }
+        const r = getXDRObject(abiEntry.outputs[0], this.xdrTypes)
+        if (r === undefined) {
+          throw new Error('Type not identified: ' + returnType)
+        }
+        const jsResult = JSON.parse(receipt.result)
+        r.fromJSON(jsResult)
+        return jsResult
       }
     })
   }
@@ -148,7 +147,7 @@ class Client {
    * Mazzaroth node specified in the node-client -> parse and return the
    * response.
    *
-   * transaction to the network -> poll for a receipt -> return the result.
+   * transaction to the network -> return the result.
    *
    * @param functions The extracted readonly functions from the abiJson.
    *
@@ -156,64 +155,60 @@ class Client {
   */
   _buildReadonlys (readonlys) {
     readonlys.forEach((abiEntry) => {
-      this[abiEntry.name] = function (...args) {
-        return new Promise((resolve, reject) => {
-          debug('Calling readonly function: %o', abiEntry.name)
-          debug('Call arguments: %o', args)
-          if (args.length !== abiEntry.inputs.length) {
-            return reject(new Error('Incorrect number of arguments.'))
-          }
-          const params = []
-          for (let i = 0; i < args.length; i++) {
-            const type = abiEntry.inputs[i].type
-            let arg = args[i]
-            if (type === 'string' || type === 'uint64' || type === 'int64') {
-              params.push(arg)
-            } else if (this.xdrTypes[type] !== undefined) {
-              const p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
-              if (p === undefined) {
-                return reject(Error('Type not identified: ' + type))
-              }
-              if (typeof arg === 'object') {
-                arg = processObjectArg(arg)
-                if (arg instanceof Error) {
-                  reject(arg)
-                }
-              }
-              if (typeof arg === 'string') {
-                arg = JSON.parse(arg)
-              }
-              p.fromJSON(arg)
-              params.push(p.toJSON('base64'))
+      this[abiEntry.name] = async function (...args) {
+        debug('Calling readonly function: %o', abiEntry.name)
+        debug('Call arguments: %o', args)
+        if (args.length !== abiEntry.inputs.length) {
+          throw new Error('Incorrect number of arguments.')
+        }
+        const params = []
+        for (let i = 0; i < args.length; i++) {
+          const type = abiEntry.inputs[i].type
+          let arg = args[i]
+          if (type === 'string' || type === 'uint64' || type === 'int64') {
+            params.push(arg)
+          } else if (this.xdrTypes[type] !== undefined) {
+            const p = getXDRObject(abiEntry.inputs[i], this.xdrTypes)
+            if (p === undefined) {
+              throw new Error('Type not identified: ' + type)
             }
+            if (typeof arg === 'object') {
+              arg = processObjectArg(arg)
+              if (arg instanceof Error) {
+                throw arg
+              }
+            }
+            if (typeof arg === 'string') {
+              arg = JSON.parse(arg)
+            }
+            p.fromJSON(arg)
+            params.push(p.toJSON('base64'))
           }
+        }
 
-          const call = {
-            function: abiEntry.name,
-            parameters: params
-          }
-          this.nodeClient.readonlySubmit(call).then(res => {
-            res = res.toJSON()
-            debug('Redonly submit response: %o', res)
-            if (res.status !== 1) {
-              return reject(new Error('Readonly status was bad: ' + res.status))
-            }
-            const resultFormat = abiEntry.outputs[0]
-            // If the return is not a special type, just resolve the result
-            if (resultFormat.type === 'string' || resultFormat.type === 'uint64' || resultFormat.type === 'int64') {
-              return resolve(res.result)
-            }
+        const call = {
+          function: abiEntry.name,
+          parameters: params
+        }
+        const res = await this.nodeClient.readonlySubmit(call).then(x => x.toJSON())
+        debug('Redonly submit response: %o', res)
+        if (res.status !== 1) {
+          throw new Error('Readonly status was bad: ' + res.status)
+        }
+        const resultFormat = abiEntry.outputs[0]
+        // If the return is not a special type, just resolve the result
+        if (resultFormat.type === 'string' || resultFormat.type === 'uint64' || resultFormat.type === 'int64') {
+          return res.result
+        }
 
-            // Otherwise parse the json result
-            const r = getXDRObject(resultFormat, this.xdrTypes)
-            if (r === undefined) {
-              return reject(Error('Type not identified: ' + resultFormat.type))
-            }
-            const jsDict = JSON.parse(res.result)
-            r.fromJSON(jsDict)
-            return resolve(jsDict)
-          })
-        })
+        // Otherwise parse the json result
+        const r = getXDRObject(resultFormat, this.xdrTypes)
+        if (r === undefined) {
+          throw new Error('Type not identified: ' + resultFormat.type)
+        }
+        const jsDict = JSON.parse(res.result)
+        r.fromJSON(jsDict)
+        return jsDict
       }
     })
   }
@@ -271,38 +266,6 @@ export function getXDRObject (output, xdrTypes) {
     return new types.VarArray(Math.pow(2, 32) - 1, () => { return new XdrType() })
   }
   return new XdrType()
-}
-
-function pollResult (txID, resolve, reject, nodeClient, resultFormat, xdrTypes, lookupRetries, lookupTimeout) {
-  nodeClient.receiptLookup(txID).then(res => {
-    res = res.toJSON()
-    debug('Receipt lookup result: %o', res)
-    if (lookupRetries === 0) {
-      return reject(new Error('Request timeout.'))
-    }
-    if (res.status === 1) {
-      if (res.receipt.status === 1) {
-        // If the return is not a special type, just resolve the result
-        if (resultFormat.type === 'string' || resultFormat.type === 'uint64' || resultFormat.type === 'int64') {
-          return resolve(res.receipt.result)
-        }
-
-        // Otherwise parse the json result
-        const r = getXDRObject(resultFormat, xdrTypes)
-        if (r === undefined) {
-          return reject(Error('Type not identified: ' + resultFormat.type))
-        }
-        const jsDict = JSON.parse(res.receipt.result)
-        r.fromJSON(jsDict)
-        return resolve(jsDict)
-      } else {
-        return reject(new Error('Receipt status is FAILURE'))
-      }
-    }
-    setTimeout(() => {
-      pollResult(txID, resolve, reject, nodeClient, resultFormat, xdrTypes, lookupRetries - 1, lookupTimeout)
-    }, lookupTimeout)
-  }).catch(err => reject(err))
 }
 
 /**
